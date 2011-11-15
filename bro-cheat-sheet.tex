@@ -9,7 +9,8 @@
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{multicol}
-\usepackage[small,compact]{titlesec}
+\usepackage{setspace}
+%\usepackage[compact]{titlesec}
 \usepackage{upquote}
 \usepackage{xcolor}
 \usepackage{xspace}
@@ -31,7 +32,7 @@
 }
 
 \def\todo#1{\textit{\textcolor{red}{TODO: #1}}}
-\newcommand{\minisec}[1]{\textbf{#1}\\}
+\newcommand{\minisec}[1]{\textsc{#1}\\}
 
 \begin{document}
 
@@ -40,15 +41,17 @@
 {\Huge\scshape Bro Cheat Sheet}
 
 \hfill\includegraphics[width=.4\linewidth]{bro-logo-small}
-\vspace{-44pt}
+\vspace{-38pt}
 
 {\scriptsize
-\url{http://www.bro-ids.org}\\
-\texttt{\href{mailto:info@bro-ids.org}{info@bro-ids.org}}\\
-\url{https://github.com/broids/cheat-sheet}\\
-Version: \today
+\setstretch{1.5}
+\begin{tabular}{l l}
+Version: & \today\\
+Website: & \url{http://www.bro-ids.org}\\
+Email: & \texttt{\href{mailto:info@bro-ids.org}{info@bro-ids.org}}\\
+Download: & \url{https://github.com/broids/cheat-sheet}
+\end{tabular}
 }
-\vspace{5pt}
 
 \section*{Startup}
 
@@ -61,24 +64,89 @@ Version: \today
 \texttt{-r \textit{file}} \dotfill Read from given PCAP file\\
 \texttt{-w \textit{file}} \dotfill Write to given file in PCAP format\\
 \texttt{-x \textit{file}} \dotfill Print contents of state file\\
-\texttt{-C} \dotfill Ignore invalid checksum\\
-\texttt{-Z} \dotfill Generate documentation for all loaded scripts\\
-
-\vspace{-10pt}
+\texttt{-C} \dotfill Ignore invalid checksum
 
 \section*{Language}
 
-In this document, lowercase letters represent instance variables and uppercase
-letters represent types. In general, \texttt{x} is an instance of type
-\texttt{T} and \texttt{y} and instance of type \texttt{U}. Argument names and
-record fields begin begin with \texttt{a}, \texttt{b}, \ldots, and \texttt{z}
-represents a default instance variable which takes on the type of the
-right-hand side expression. Parenthesis after a type, e.g., \texttt{T()},
-denote constructor invocation.
+Lowercase letters represent instance variables and uppercase letters represent
+types. In general, \texttt{x} is an instance of type \texttt{T} and \texttt{y}
+and instance of type \texttt{U}. Argument names and record fields begin begin
+with \texttt{a}, \texttt{b},~\ldots, and \texttt{z} represents a default
+instance variable which takes on the type of the right-hand side expression.
+For notational convenience, \texttt{x} can often replaced with an expression of
+type \texttt{T}.
+%Parenthesis after a type, e.g., \texttt{T()}, denote constructor invocation.
+
+\subsection*{Variables}
+
+Constant qualifier \dotfill \texttt{const}\\
+Constant redefinition \dotfill \texttt{redef x \textit{op} \textit{expr}}\\
+Scope qualifier \dotfill \texttt{local}, \texttt{global}\\ 
+Declaration \dotfill \texttt{\textit{scope} x:~T}\\
+Declaration \& Definition \dotfill \texttt{\textit{scope} z = \textit{expr}}
+
+\subsection*{Declarations}
+
+Type \dotfill \texttt{type~\textit{name}:~T}\\
+Function \dotfill \verb|function f(a: T, ...): R|\\
+Event \dotfill \verb|event e(a: T, ...)|
+
+\subsection*{Modules}
+
+Script import \dotfill \texttt{@load \textit{path}}\\
+Set current namespace to \texttt{ns} \dotfill \texttt{module \textit{ns}}\\
+Export global symbols \dotfill \verb|export { ... }|\\
+Access \texttt{module} or \texttt{enum} namespace \dotfill \verb|T::a|
+
+\subsection*{Statements}
+
+Basic statement \dotfill
+  \texttt{\textit{stmt};} or \texttt{\textit{expr};}\\ 
+Code block \dotfill \texttt{\{ \textit{stmt}; ... \}}\\ 
+Assignment \dotfill \texttt{z = \textit{expr}}\\
+Function assignment \dotfill \texttt{z~=~function(...):~R~\{..\}}\\
+Event queuing \dotfill \verb|event e(...)|\\
+Event scheduling \dotfill \verb|schedule 10 secs { e(...) }|\\
+Print expression to \texttt{stdout} \dotfill \texttt{print \textit{expr}}\\
+
+\vspace{-10pt}
+%\minisec{Control Flow}
+\begin{multicols*}{3}
+\textsc{Branching}
+\begin{alltt}
+if (\textit{expr})
+    \dots
+else if (\textit{expr})
+    \dots
+else
+    \dots
+\end{alltt}
+
+\textsc{Iteration}
+\begin{alltt}
+for (i in x)
+    \dots
+\end{alltt}
+
+\textsc{Conditional}
+\begin{alltt}
+when (\textit{expr})
+    \dots
+\end{alltt}
+\vspace{-10pt}
+
+\begin{alltt}
+\textrm{\textsc{Control}}\vspace{5pt}
+break
+continue
+next
+return
+\end{alltt}
+\end{multicols*}
 
 \subsection*{Expressions}
 
-%\minisec{Operators}
+\minisec{Operators}
 \verb|!| \dotfill Negation\\
 \verb|$|, \verb|?$| \dotfill Dereference, record field existence\\
 \verb|+|, \verb|-|, \verb|*|, \verb|/|, \verb|%| \dotfill Arithmetic\\
@@ -91,77 +159,9 @@ denote constructor invocation.
 \verb|in|, \verb|!in| \dotfill Membership or pattern matching\\
 \verb|[x]| \dotfill Index strings and containers\\
 \verb#|x|# \dotfill Cardinality/size for strings and containers\\
-\verb|::| \dotfill Access \texttt{module} or \texttt{enum} namespace\\
+\verb|f(...)| \dotfill Function call\\
 \texttt{\textit{expr}$\;$?$\;$\textit{expr}$\;$:$\;$\textit{expr}}
   \dotfill Ternary if-then-else
-
-\subsection*{Statements}
-
-Basic statement \dotfill \texttt{\textit{stmt};}\\ 
-Code block \dotfill \texttt{\{ \textit{stmt}; ... \}}\\ 
-Script import \dotfill \texttt{@load \textit{path}}\\
-Type declaration \dotfill \texttt{type~\textit{name}:~T}\\
-Print expression to \texttt{stdout} \dotfill
-\texttt{print \textit{expr}}\\
-
-\minisec{Variables}
-Scope qualifier \dotfill \texttt{local}, \texttt{global}\\ 
-Declaration \dotfill \texttt{\textit{scope} x:~T}\\
-Declaration \& Definition \dotfill \texttt{\textit{scope} x = T()}\\
-Assignment \dotfill \texttt{x = T()}\\
-
-\minisec{Constants}
-Constant qualifier \dotfill \texttt{const} \\
-Redefinition \dotfill \texttt{redef x \textit{op} T()}\\
-
-\minisec{Namespaces}
-\texttt{module \textit{ns}} \dotfill Set current namespace to \texttt{ns}\\
-\verb|export { ... }| \dotfill Export global symbols of this file \\
-
-\minisec{Functions}
-Declaration \dotfill \verb|function f(a: T, ...): R|\\
-Invocation \dotfill \verb|f(x, ...)|\\
-Anonymous \dotfill \texttt{z = function(...):~R~\{ ... \}}\\
-
-\minisec{Events}
-Signature \dotfill \verb|event e(a: T, ...)|\\
-Queuing \dotfill \verb|event e(x, ...)|\\
-Scheduling \dotfill \verb|schedule 10 secs { e(x, ...) }|\\
-
-\vspace{-10pt}
-%\minisec{Control Flow}
-\begin{multicols*}{3}
-\textbf{Branching}
-\begin{alltt}
-if (\textit{expr})
-    \dots
-else if (\textit{expr})
-    \dots
-else
-    \dots
-\end{alltt}
-
-\textbf{Iteration}
-\begin{alltt}
-for (i in x)
-    \dots
-\end{alltt}
-
-\textbf{Conditional}
-\begin{alltt}
-when (x = y)
-    \dots
-\end{alltt}
-\vspace{-10pt}
-
-\begin{alltt}
-\textrm{\textbf{Control}}\vspace{5pt}
-break
-continue
-next
-return
-\end{alltt}
-\end{multicols*}
 
 \subsection*{Types}
 
@@ -182,11 +182,11 @@ return
 
 \minisec{Enumerables}
 Declaration \dotfill \verb|enum { FOO, BAR }|\\
-Construction \dotfill \texttt{\textit{scope}} \verb|x = FOO|\\
+Assignment \dotfill \texttt{\textit{scope}} \verb|x = FOO|\\
 
 \minisec{Records}
 Declaration \dotfill \verb|record { a: T, b: U, ... }|\\
-Construction \dotfill \texttt{\textit{scope}} \verb|r = [$a=x, $b=y, ...]|\\
+Assignment \dotfill \texttt{\textit{scope}} \verb|r = [$a=x, $b=y, ...]|\\
 Access \dotfill \verb|z = r$a|\\
 Assignment \dotfill \verb|r$b = y|\\
 Deletion \dotfill \verb|delete r$a|\\
@@ -194,7 +194,7 @@ Deletion \dotfill \verb|delete r$a|\\
 \minisec{Sets}
 Declaration \dotfill \verb|set[T]|\\
 Constructor \dotfill \verb|set()|\\
-Construction \dotfill \texttt{\textit{scope}} \verb|s = { x, ... }|\\
+Assignment \dotfill \texttt{\textit{scope}} \verb|s = { x, ... }|\\
 Access \dotfill \verb|z = s[x]|\\
 Addition \dotfill \verb|add s[x]|\\
 Deletion \dotfill \verb|delete s[x]|\\
@@ -202,7 +202,7 @@ Deletion \dotfill \verb|delete s[x]|\\
 \minisec{Tables}
 Declaration \dotfill \verb|table[T] of U|\\
 Constructor \dotfill \verb|table()|\\
-Construction \dotfill \texttt{\textit{scope}} \verb|t = { [x] = y, ... }|\\
+Assignment \dotfill \texttt{\textit{scope}} \verb|t = { [x] = y, ... }|\\
 Access \dotfill \verb|z = t[x]|\\
 Assignment \dotfill \verb|add t[x] = y|\\
 Deletion \dotfill \verb|delete t[x]|\\
@@ -210,7 +210,7 @@ Deletion \dotfill \verb|delete t[x]|\\
 \minisec{Vectors}
 Declaration \dotfill \verb|vector of T|\\
 Constructor \dotfill \verb|vector()|\\
-Construction \dotfill \texttt{\textit{scope}} \verb|v = { x, ... }|\\
+Assignment \dotfill \texttt{\textit{scope}} \verb|v = { x, ... }|\\
 Access \dotfill \verb|z = v[0]|\\
 Assignment \dotfill \verb|v[42] = x|\\
 % FIXME: not yet supported in Bro
@@ -225,15 +225,17 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
 \verb|event foo() &priority=-3|.\\
 
 \verb|&optional| \dotfill Allow record field to be missing\\
-\verb|&default=x| \dotfill Use default value when element is not in container\\
+\verb|&default=x| \dotfill Use default value \texttt{x} for record fields and
+  container elements\\
 \verb|&redef| \dotfill Make constants redefinable\\
 % Users should use the logging framework instead.
 %\verb|&rotate_interval=x| \dotfill Rotate file after time \verb|x|\\
 %\verb|&rotate_size=x| \dotfill Rotate file after reaching size limit \verb|x|\\
-\verb|&add_func=f| \dotfill Call \verb|f| \todo{after?} adding element to
-  container\\
-\verb|&delete_func=f| \dotfill Call \verb|f| right before deleting element from
-  container \\
+%
+% These do not seem to be worthwhile including
+%\verb|&add_func=f| \dotfill Call \verb|f| after adding element to container\\
+%\verb|&delete_func=f| \dotfill Call \verb|f| before deleting element from
+%container \\
 \verb|&expire_func=f| \dotfill Call \verb|f| right before container element 
   expires\\
 \verb|&read_expire=x| \dotfill Remove element after not reading it for time
@@ -249,12 +251,12 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
 %\verb|&encrypt| \dotfill \\
 %\verb|&match| \dotfill \\
 \verb|&raw_output| \dotfill Do not escape non-ASCII characters when writing to
-a file\\
+  a file\\
 \verb|&mergeable| \dotfill Prefer set union to assignment for synchronized
   state\\
 \verb|&priority=x| \dotfill Execution priority of event handler\\
-\verb|&group="x"| \dotfill Events in the same group can be
-activated/deactivated together \\
+\verb|&group="x"| \dotfill Events in the same group can be jointly
+  activated/deactivated\\
 \verb|&log| \dotfill Write record field to log \\
 
 \subsection*{Built-In Functions (BIFs)}
