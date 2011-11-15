@@ -1,0 +1,378 @@
+\documentclass[10pt,landscape]{article}
+
+\usepackage{alltt}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage[T1]{fontenc}
+\usepackage[landscape,margin=13mm,footskip=1pt,includefoot]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{multicol}
+\usepackage[small,compact]{titlesec}
+\usepackage{upquote}
+\usepackage{xcolor}
+\usepackage{xspace}
+
+\graphicspath{{figs/}}
+
+\pagestyle{empty}
+\parindent=0pt
+
+\setitemize{itemsep=0.1mm,parsep=1pt,leftmargin=10pt}
+\setenumerate{itemsep=0.2mm,parsep=1pt}
+
+\hypersetup{
+    colorlinks=true,        % false: boxed links; true: colored links
+    linkcolor=red,          % color of internal links
+    citecolor=cyan,         % color of links to bibliography
+    filecolor=magenta,      % color of file links
+    urlcolor=blue           % color of external links
+}
+
+\def\todo#1{\textit{\textcolor{red}{TODO: #1}}}
+\newcommand{\minisec}[1]{\textbf{#1}\\}
+
+\begin{document}
+
+\begin{multicols*}{3}
+  
+{\Huge\scshape Bro Cheat Sheet}
+
+\hfill\includegraphics[width=.4\linewidth]{bro-logo-small}
+\vspace{-44pt}
+
+{\scriptsize
+\url{http://www.bro-ids.org}\\
+\texttt{\href{mailto:info@bro-ids.org}{info@bro-ids.org}}\\
+\url{https://github.com/broids/cheat-sheet}\\
+Version: \today
+}
+\vspace{5pt}
+
+\section*{Startup}
+
+\texttt{bro \textit{[options] [file \dots]}}\\
+\texttt{\textit{file}} \dotfill Bro policy script or \texttt{stdin}\\
+\texttt{-e \textit{code}} \dotfill Augment policies by given code\\
+\texttt{-h} \dotfill Display command line options\\
+\texttt{-i \textit{iface}} \dotfill Read from given interface\\
+\texttt{-p \textit{pfx}} \dotfill Add given prefix to policy resolution\\
+\texttt{-r \textit{file}} \dotfill Read from given PCAP file\\
+\texttt{-w \textit{file}} \dotfill Write to given file in PCAP format\\
+\texttt{-x \textit{file}} \dotfill Print contents of state file\\
+\texttt{-C} \dotfill Ignore invalid checksum\\
+\texttt{-Z} \dotfill Generate documentation for all loaded scripts\\
+
+\vspace{-10pt}
+
+\section*{Language}
+
+In this document, lowercase letters represent instance variables and uppercase
+letters represent types. In general, \texttt{x} is an instance of type
+\texttt{T} and \texttt{y} and instance of type \texttt{U}. Argument names and
+record fields begin begin with \texttt{a}, \texttt{b}, \ldots, and \texttt{z}
+represents a default instance variable which takes on the type of the
+right-hand side expression. Parenthesis after a type, e.g., \texttt{T()},
+denote constructor invocation.
+
+\subsection*{Expressions}
+
+\minisec{Operators}
+\verb|!| \dotfill Negation\\
+\verb|$|, \verb|?$| \dotfill Dereference, record field existence\\
+\verb|+|, \verb|-|, \verb|*|, \verb|/|, \verb|%| \dotfill Arithmetic\\
+\verb|++|, \verb|--| \dotfill Post-increment, post-decrement\\
+\verb|+=|, \verb|-=|, \verb|*=|, \verb|/=| \dotfill Arithmetic and assignment\\
+\verb|==|, \verb|!=| \dotfill Equality, inequality\\
+\verb|<|, \verb|<=|, \verb|>=|, \verb|>|
+  \dotfill Less/greater than (or equal)\\
+\verb|&&|, \verb#||# \dotfill Conjunction, disjunction\\
+\verb|in|, \verb|!in| \dotfill Membership or pattern matching\\
+\verb|[x]| \dotfill Index strings and containers\\
+\verb#|x|# \dotfill Cardinality/size for strings and containers\\
+\verb|::| \dotfill Access \texttt{module} or \texttt{enum} namespace\\
+\texttt{\textit{expr}$\;$?$\;$\textit{expr}$\;$:$\;$\textit{expr}}
+  \dotfill Ternary if-then-else
+
+\subsection*{Statements}
+
+Basic statement \dotfill \texttt{\textit{stmt};}\\ 
+Code block \dotfill \texttt{\{ \textit{stmt}; ... \}}\\ 
+Script import \dotfill \texttt{@load \textit{path}}\\
+Type declaration \dotfill \texttt{type~\textit{name}:~T}\\
+Print expression to \texttt{stdout} \dotfill
+\texttt{print \textit{expr}}\\
+
+\minisec{Variables}
+Scope qualifier \dotfill \texttt{local}, \texttt{global}\\ 
+Declaration \dotfill \texttt{\textit{scope} x:~T}\\
+Declaration \& Definition \dotfill \texttt{\textit{scope} x = T()}\\
+Assignment \dotfill \texttt{x = T()}\\
+
+\minisec{Constants}
+Constant qualifier \dotfill \texttt{const} \\
+Redefinition \dotfill \texttt{redef x \textit{op} T()}\\
+
+\minisec{Namespaces}
+\texttt{module \textit{ns}} \dotfill Set current namespace to \texttt{ns}\\
+\verb|export { ... }| \dotfill Export global symbols of this file \\
+
+\minisec{Functions}
+Declaration \dotfill \verb|function f(a: T, ...): R|\\
+Invocation \dotfill \verb|f(x, ...)|\\
+Anonymous \dotfill \texttt{z = function(...):~R~\{ ... \}}\\
+
+\minisec{Events}
+Signature \dotfill \verb|event e(a: T, ...)|\\
+Queuing \dotfill \verb|event e(x, ...)|\\
+Scheduling \dotfill \verb|schedule 10 secs { e(x, ...) }|\\
+
+\vspace{-10pt}
+%\minisec{Control Flow}
+\begin{multicols*}{3}
+\textbf{Branching}
+\begin{alltt}
+if (\textit{expr})
+    \dots
+else if (\textit{expr})
+    \dots
+else
+    \dots
+\end{alltt}
+
+\textbf{Iteration}
+\begin{alltt}
+for (i in x)
+    \dots
+\end{alltt}
+
+\textbf{Conditional}
+\begin{alltt}
+when (x = y)
+    \dots
+\end{alltt}
+\vspace{-10pt}
+
+\begin{alltt}
+\textrm{\textbf{Control}}\vspace{5pt}
+break
+continue
+next
+return
+\end{alltt}
+\end{multicols*}
+
+\subsection*{Types}
+
+\minisec{Basic}
+\verb|addr| \dotfill IP address (\verb|127.0.0.1|)\\
+\verb|bool| \dotfill Boolean flag (\verb|T|, \verb|F|)\\
+\verb|count| \dotfill 64-bit unsigned integer (\verb|42|)\\
+\verb|double| \dotfill Double-precision floating point (\verb|99.9|)\\
+\verb|int| \dotfill 64-bit signed integer (\verb|-7|)\\
+\verb|interval| \dotfill Time interval
+  (\verb|8 sec|/\verb|min|/\verb|hr|/\verb|day[s]|)\\
+\verb|pattern| \dotfill Regular expression (\verb|/^br[oO])$/|)\\
+\verb|port| \dotfill Transport-layer port
+  (\verb|22/tcp|, \verb|53/udp|)\\
+\verb|string| \dotfill String of bytes (\verb|"foo"|)\\
+\verb|subnet| \dotfill CIDR subnet mask (\verb|10.0.0.0/8|)\\
+\verb|time| \dotfill Absolute epoch time (\verb|1320977325|)\\
+
+\minisec{Enumerables}
+Declaration \dotfill \verb|enum { FOO, BAR }|\\
+Construction \dotfill \texttt{\textit{scope}} \verb|x = FOO|\\
+
+\minisec{Records}
+Declaration \dotfill \verb|record { a: T, b: U, ... }|\\
+Construction \dotfill \texttt{\textit{scope}} \verb|r = [$a=x, $b=y, ...]|\\
+Access \dotfill \verb|z = r$a|\\
+Assignment \dotfill \verb|r$b = U()|\\
+Deletion \dotfill \verb|delete r$a|\\
+
+\minisec{Sets}
+Declaration \dotfill \verb|set[T]|\\
+Constructor \dotfill \verb|set()|\\
+Construction \dotfill \texttt{\textit{scope}} \verb|s = { x, ... }|\\
+Access \dotfill \verb|z = s[x]|\\
+Addition \dotfill \verb|add s[x]|\\
+Deletion \dotfill \verb|delete s[x]|\\
+
+\minisec{Tables}
+Declaration \dotfill \verb|table[T] of U|\\
+Constructor \dotfill \verb|table()|\\
+Construction \dotfill \texttt{\textit{scope}} \verb|t = { [x] = y, ... }|\\
+Access \dotfill \verb|z = t[x]|\\
+Assignment \dotfill \verb|add t[x] = y|\\
+Deletion \dotfill \verb|delete t[x]|\\
+
+\minisec{Vectors}
+Declaration \dotfill \verb|vector of T|\\
+Constructor \dotfill \verb|vector()|\\
+Construction \dotfill \texttt{\textit{scope}} \verb|v = { x, ... }|\\
+Access \dotfill \verb|y = x[1]|\\
+\todo{Assignment} \dotfill \verb|x[2] = x|\\
+\todo{Deletion} \dotfill \verb|delete x[3]|
+\end{multicols*}
+
+\begin{multicols*}{2}
+\subsection*{Attributes}
+Attributes occur at the end of type/event declarations and change their
+behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
+\verb|type T: set[count] &read_expire=5min| or
+\verb|event foo() &priority=-3|.\\
+
+\verb|&optional| \dotfill Allow record field to be missing\\
+\verb|&default=x| \dotfill Use default value when element is not in container\\
+\verb|&redef| \dotfill Make constants redefinable\\
+%\verb|&rotate_interval=x| \dotfill Rotate file after time \verb|x|\\
+%\verb|&rotate_size=x| \dotfill Rotate file after reaching size limit \verb|x|\\
+\verb|&add_func=f| \dotfill Call \verb|f| \todo{after?} adding element to
+  container\\
+\verb|&delete_func=f| \dotfill Call \verb|f| right before deleting element from
+  container \\
+\verb|&expire_func=f| \dotfill Call \verb|f| right before container element 
+  expires\\
+\verb|&read_expire=x| \dotfill Remove element after not reading it for time
+  \verb|x|\\
+\verb|&write_expire=x| \dotfill Remove element after not writing it for time
+  \verb|x|\\
+\verb|&create_expire=x| \dotfill Remove element after time \verb|x| from
+  insertion\\
+\verb|&persistent| \dotfill Write state to disk (per default on shutdown)\\
+\verb|&synchronized| \dotfill Synchronize variable across nodes\\
+%\verb|&postprocessor| \dotfill \\
+%\verb|&encrypt| \dotfill \\
+%\verb|&match| \dotfill \\
+\verb|&raw_output| \dotfill Do not escape non-ASCII characters when writing to
+a file\\
+\verb|&mergeable| \dotfill Prefer set union to assignment for synchronized
+  state\\
+\verb|&priority=x| \dotfill Execution priority of event handler\\
+\verb|&group="x"| \dotfill Events in the same group can be
+activated/deactivated together \\
+\verb|&log| \dotfill Write record field to log \\
+
+\subsection*{Built-In Functions (BIFs)}
+\linespread{0.9}
+
+\minisec{Core}
+\vspace{-20pt}
+\begin{itemize}
+  \item \verb|length(v: any): count|\\
+    Returns the number of elements in the container \texttt{v}.
+  \item \verb|same_object(o1: any, o2: any): bool|\\
+    Check whether \texttt{o1} and \texttt{o2} reference the same internal
+    object.
+  \item \verb|clear_table(v: any): any|\\
+    Remove all elements from the set or table \texttt{v}.
+\end{itemize}
+
+\minisec{String Processing}
+\vspace{-20pt}
+\begin{itemize}
+  \item \verb|byte_len(s: string): count|\\
+    Returns the number of characters (i.e., bytes) of \texttt{s}.
+  \item \verb|sub_bytes(s: string, start: count, n: int): string|\\
+    Get a substring of \texttt{s}, starting at position \texttt{start} and
+    having length \texttt{n}.
+  \item \verb|split(s string, re: pattern): table[count] of string|\\
+    Split \texttt{s} into an array using \texttt{re} to separate the elements.
+  \item \verb|split1(s string, re: pattern): table[count] of string|\\
+    Same as \texttt{split}, but \texttt{s} is only split once (if possible) at
+    the earliest position and an array of two strings is returned. An array of
+    one string is returned when \texttt{s} cannot be split.
+  \item \verb|split_all(s: string, re: pattern): table[count] of string|\\
+    Same as \texttt{split}, but also include the matching separators, e.g.,
+    \verb|split_all("a-b--cd", /(\-)+/)| returns
+    \verb|{"a", "-", "b", "--", "cd"}|. Odd-indexed elements do not match the
+    pattern and even-indexed ones do.
+  \item
+\begin{verbatim}
+split_n(s: string, re: pattern, incl_sep: bool,
+        max_num_sep: count): table[count] of string
+\end{verbatim}
+    Similar to \verb|split1| and \verb|split_all|, but \verb|incl_sep|
+    indicates whether to include matching separators and \verb|max_num_sep| the
+    number of times to split \texttt{s}.
+%  \item 
+%\begin{verbatim}
+%function split_complete(s string, re: pattern,
+%                        other: set[string], incl_sep: bool,
+%                        max_num_sep: count): table[count] of string
+%\end{verbatim}
+%    Same as \verb|split_n|, except that the extra parameter \texttt{other} is
+%    not used.
+  \item \verb|sub(s: string, re: pattern, repl: string): string|\\
+    Substitutes \texttt{repl} for the first occurrence of \texttt{re} in
+    \texttt{s}.
+  \item \verb|gsub(s string, re: pattern, repl: string): string|\\
+    Same as \texttt{sub} except that all occurrences of \texttt{re} are
+    replaced.
+  \item \verb|strcmp(s1: string, s2: string): int|
+    Lexicographically compare \texttt{s1} and \texttt{s2}. Returns an integer
+    greater than, equal to, or less than 0 according as \texttt{s1} is greater
+    than, equal to, or less than \texttt{s2}.
+  \item \verb|strstr(big: string, little: string): count|\\
+    Locate the first occurence of \texttt{litle} in \texttt{big}.
+    Returns 0 if \texttt{little} is not found in \texttt{big}.
+  \item \verb|subst_string(s: string, from: string, to: string): string|\\
+    Substitute each (non-overlapping) appearance of \texttt{from} in
+    \texttt{s} to \texttt{to}, and return the resulting string.
+  \item \verb|to_lower(s: string): string|\\
+    Returns a copy of \texttt{s} with each letter converted to lower case.
+  \item \verb|to_upper(s: string): string|\\
+    Returns a copy of \texttt{s} with each letter converted to upper case.
+  \item \verb|clean(s: string): string|\\
+    Replace non-printable characters in \texttt{s} with escaped sequences,
+    with the mappings
+    \verb|0| $\rightarrow$ \verb|\0|, 
+    \verb|DEL| $\rightarrow$ \verb|^?|,
+    values $\le 26$ $\rightarrow$ \verb|^[A-Z]|,
+    and values not in $[32, 126]$~$\rightarrow$~\verb|%XX|.
+  \item \verb|to_string_literal(s: string): string|\\
+    Same as clean, but with different mappings: 
+    values not in $[32, 126]$~$\rightarrow$~\verb|%XX|,
+    \verb|\|~$\rightarrow$~\verb|\\|, 
+    \verb|'|~$\rightarrow$~\verb|\'|,
+    \verb|"|~$\rightarrow$~\verb|\"|.
+  \item \verb|is_ascii(s: string): bool|\\
+    Returns false if any byte value of \texttt{s} is greater than 127, and true
+    otherwise.
+  \item \verb|escape_string(s: string): string|\\
+    Returns a printable version of \texttt{s}. Same as \texttt{clean} except
+    that non-printable characters are removed.
+  \item \verb|string_to_ascii_hex(s: string): string|\\
+    Returns an ASCII hexadecimal representation of a string.
+  \item \verb|str_split(s: string, idx: vector of count): vector of string|\\
+    Splits \texttt{s} into substrings, taking all the indices in
+    \texttt{idx} as cutting points; \texttt{idx} does not need to be sorted,
+    and can have multiple entries. Out-of-bounds indices are ignored.
+  \item \verb|strip(s: string): string|\\
+    Strips whitespace at both ends of \texttt{s}.
+  \item \verb|string_fill(len: int, source: string): string|\\
+    Generates a string of size \texttt{len} and fills it with repetitions of
+    \texttt{source}.
+  \item \verb|str_shell_escape(source: string): string|\\
+    Takes a string and escapes characters that would allow execution of
+    commands at the shell level. Must be used before including strings in
+    \texttt{system()} or similar calls.
+  \item \verb|find_all(s: string, re: pattern) : string_set|\\
+    Returns all occurrences of \texttt{re} in \texttt{s} (or an empty empty set
+    if none).
+  \item \verb|find_last(s: string, re: pattern) : string|\\
+    Returns the last occurrence of \texttt{re} in \texttt{s}. If not found,
+    returns an empty string.  Note that this function returns the match that
+    starts at the largest index in the string, which is not necessarily the
+    longest match.  For example, a pattern of \texttt{/.*/} will return the
+    final character in the string.
+  \item \verb|hexdump(data: string) : string|\\
+    Returns a hex dump for \texttt{data}. The hex dump renders 16 bytes per
+    line, with hex on the left and ASCII (where printable) on the right. Based
+    on Netdude's hex editor code.
+\end{itemize}
+
+\end{multicols*}
+
+\end{document}

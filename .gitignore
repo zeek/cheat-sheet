@@ -1,0 +1,5 @@
+*.aux
+*.fdb_latexmk
+*.log
+*.out
+*.sw[op]
