@@ -78,7 +78,7 @@ denote constructor invocation.
 
 \subsection*{Expressions}
 
-\minisec{Operators}
+%\minisec{Operators}
 \verb|!| \dotfill Negation\\
 \verb|$|, \verb|?$| \dotfill Dereference, record field existence\\
 \verb|+|, \verb|-|, \verb|*|, \verb|/|, \verb|%| \dotfill Arithmetic\\
@@ -227,6 +227,7 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
 \verb|&optional| \dotfill Allow record field to be missing\\
 \verb|&default=x| \dotfill Use default value when element is not in container\\
 \verb|&redef| \dotfill Make constants redefinable\\
+% Users should use the logging framework instead.
 %\verb|&rotate_interval=x| \dotfill Rotate file after time \verb|x|\\
 %\verb|&rotate_size=x| \dotfill Rotate file after reaching size limit \verb|x|\\
 \verb|&add_func=f| \dotfill Call \verb|f| \todo{after?} adding element to
@@ -243,6 +244,7 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
   insertion\\
 \verb|&persistent| \dotfill Write state to disk (per default on shutdown)\\
 \verb|&synchronized| \dotfill Synchronize variable across nodes\\
+% TODO: these are probably less relevant for users.
 %\verb|&postprocessor| \dotfill \\
 %\verb|&encrypt| \dotfill \\
 %\verb|&match| \dotfill \\
@@ -258,8 +260,8 @@ activated/deactivated together \\
 \subsection*{Built-In Functions (BIFs)}
 \linespread{0.9}
 
-\minisec{Core}
-\vspace{-20pt}
+\subsubsection*{Core}
+
 \begin{itemize}
   \item \verb|length(v: any): count|\\
     Returns the number of elements in the container \texttt{v}.
@@ -270,8 +272,8 @@ activated/deactivated together \\
     Remove all elements from the set or table \texttt{v}.
 \end{itemize}
 
-\minisec{String Processing}
-\vspace{-20pt}
+\subsubsection*{String Processing}
+
 \begin{itemize}
   \item \verb|byte_len(s: string): count|\\
     Returns the number of characters (i.e., bytes) of \texttt{s}.
