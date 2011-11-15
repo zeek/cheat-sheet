@@ -188,7 +188,7 @@ Construction \dotfill \texttt{\textit{scope}} \verb|x = FOO|\\
 Declaration \dotfill \verb|record { a: T, b: U, ... }|\\
 Construction \dotfill \texttt{\textit{scope}} \verb|r = [$a=x, $b=y, ...]|\\
 Access \dotfill \verb|z = r$a|\\
-Assignment \dotfill \verb|r$b = U()|\\
+Assignment \dotfill \verb|r$b = y|\\
 Deletion \dotfill \verb|delete r$a|\\
 
 \minisec{Sets}
@@ -211,9 +211,10 @@ Deletion \dotfill \verb|delete t[x]|\\
 Declaration \dotfill \verb|vector of T|\\
 Constructor \dotfill \verb|vector()|\\
 Construction \dotfill \texttt{\textit{scope}} \verb|v = { x, ... }|\\
-Access \dotfill \verb|y = x[1]|\\
-\todo{Assignment} \dotfill \verb|x[2] = x|\\
-\todo{Deletion} \dotfill \verb|delete x[3]|
+Access \dotfill \verb|z = v[0]|\\
+Assignment \dotfill \verb|v[42] = x|\\
+% FIXME: not yet supported in Bro
+%Deletion \dotfill \verb|delete v[3]|
 \end{multicols*}
 
 \begin{multicols*}{2}
