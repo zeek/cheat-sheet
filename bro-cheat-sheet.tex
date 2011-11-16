@@ -33,7 +33,7 @@
 \begin{document}
 
 \begin{multicols*}{3}
-  
+
 {\Huge\scshape Bro Cheat Sheet}
 
 \hfill\includegraphics[width=.4\linewidth]{bro-logo-small}
@@ -77,7 +77,7 @@ of type \texttt{T}.
 
 Constant qualifier \dotfill \texttt{const}\\
 Constant redefinition \dotfill \texttt{redef x \textit{op} \textit{expr}}\\
-Scope qualifier \dotfill \texttt{local}, \texttt{global}\\ 
+Scope qualifier \dotfill \texttt{local}, \texttt{global}\\
 Declaration \dotfill \texttt{\textit{scope} x:~T}\\
 Declaration \& Definition \dotfill \texttt{\textit{scope} z = \textit{expr}}
 
@@ -97,8 +97,8 @@ Access \texttt{module} or \texttt{enum} namespace \dotfill \verb|T::a|
 \subsection*{Statements}
 
 Basic statement \dotfill
-  \texttt{\textit{stmt};} or \texttt{\textit{expr};}\\ 
-Code block \dotfill \texttt{\{ \textit{stmt}; ... \}}\\ 
+  \texttt{\textit{stmt};} or \texttt{\textit{expr};}\\
+Code block \dotfill \texttt{\{ \textit{stmt}; ... \}}\\
 Assignment \dotfill \texttt{z = \textit{expr}}\\
 Function assignment \dotfill \texttt{z~=~function(...):~R~\{..\}}\\
 Event queuing \dotfill \verb|event e(...)|\\
@@ -232,7 +232,7 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
 %\verb|&add_func=f| \dotfill Call \verb|f| after adding element to container\\
 %\verb|&delete_func=f| \dotfill Call \verb|f| before deleting element from
 %container \\
-\verb|&expire_func=f| \dotfill Call \verb|f| right before container element 
+\verb|&expire_func=f| \dotfill Call \verb|f| right before container element
   expires\\
 \verb|&read_expire=x| \dotfill Remove element after not reading it for time
   \verb|x|\\
@@ -318,10 +318,10 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
     Converts a \texttt{string} into a (signed) integer.
   \item \verb|int_to_count(n: int): count|\\
     Converts a positive integer into a \texttt{count} or returns 0 if
-    \texttt{n < 0}. 
+    \texttt{n < 0}.
   \item \verb|double_to_count(d: double): count|\\
     Converts a positive \texttt{double} into a \texttt{count} or returns 0 if
-    \texttt{d < 0.0}. 
+    \texttt{d < 0.0}.
   \item \verb|to_count(s: string): count|\\
     Converts a \texttt{string} into a \texttt{count}.
 \end{itemize}
@@ -353,7 +353,7 @@ split_n(s: string, re: pattern, incl_sep: bool,
     Similar to \verb|split1| and \verb|split_all|, but \verb|incl_sep|
     indicates whether to include matching separators and \verb|max_num_sep| the
     number of times to split \texttt{s}.
-%  \item 
+%  \item
 %\begin{verbatim}
 %function split_complete(s string, re: pattern,
 %                        other: set[string], incl_sep: bool,
@@ -384,14 +384,14 @@ split_n(s: string, re: pattern, incl_sep: bool,
   \item \verb|clean(s: string): string|\\
     Replace non-printable characters in \texttt{s} with escaped sequences,
     with the mappings
-    \verb|0| $\rightarrow$ \verb|\0|, 
+    \verb|0| $\rightarrow$ \verb|\0|,
     \verb|DEL| $\rightarrow$ \verb|^?|,
     values $\le 26$ $\rightarrow$ \verb|^[A-Z]|,
     and values not in $[32, 126]$~$\rightarrow$~\verb|%XX|.
   \item \verb|to_string_literal(s: string): string|\\
-    Same as clean, but with different mappings: 
+    Same as clean, but with different mappings:
     values not in $[32, 126]$~$\rightarrow$~\verb|%XX|,
-    \verb|\|~$\rightarrow$~\verb|\\|, 
+    \verb|\|~$\rightarrow$~\verb|\\|,
     \verb|'|~$\rightarrow$~\verb|\'|,
     \verb|"|~$\rightarrow$~\verb|\"|.
   \item \verb|is_ascii(s: string): bool|\\
