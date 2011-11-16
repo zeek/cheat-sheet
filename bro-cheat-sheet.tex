@@ -17,7 +17,7 @@
 \pagestyle{empty}
 \parindent=0pt
 
-\setitemize{itemsep=0.1mm,parsep=1pt,leftmargin=10pt}
+\setitemize{itemsep=1pt,topsep=0pt,parsep=1pt,leftmargin=10pt}
 
 \hypersetup{
     colorlinks=true,        % false: boxed links; true: colored links
@@ -69,8 +69,8 @@ types. In general, \texttt{x} is an instance of type \texttt{T} and \texttt{y}
 and instance of type \texttt{U}. Argument names and record fields begin begin
 with \texttt{a}, \texttt{b},~\ldots, and \texttt{z} represents a default
 instance variable which takes on the type of the right-hand side expression.
-For notational convenience, \texttt{x} can often replaced with an expression of
-type \texttt{T}.
+For notational convenience, \texttt{x} can often be replaced with an expression
+of type \texttt{T}.
 %Parenthesis after a type, e.g., \texttt{T()}, denote constructor invocation.
 
 \subsection*{Variables}
@@ -268,6 +268,62 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
     object.
   \item \verb|clear_table(v: any): any|\\
     Remove all elements from the set or table \texttt{v}.
+\end{itemize}
+
+\subsubsection*{Conversion}
+
+\begin{itemize}
+  \item \verb|cat(...): string|\\
+    Concatenates all given arguments into a single string.
+  \item \verb|cat_sep(sep: string, def: string, ...): string|\\
+    Similar to cat, but places \texttt{sep} between each given argument.
+    \todo{what does \texttt{def} do?}
+  \item \verb|fmt(...): string|\\
+    Produces a formatted string. The first argument is the \emph{format string}
+    and specifies how subsequent arguments are converted for output. It is
+    composed of zero or more directives: ordinary characters (not \verb|%|),
+    which are copied unchanged to the output, and conversion specifications,
+    each of which fetches zero or more subsequent arguments. Conversion
+    specifications begin with \verb|%| and the arguments must properly
+    correspond to the specifier.
+
+    After the \verb|%|, the following characters may appear in sequence:
+    \begin{tabular}{l l}
+      \verb|%| & Literal \verb|%|\\
+      \verb|-| & Left-align field\\
+      \verb|[0-9]+| & The field width (< 128)\\
+      \verb|.| & Precision of floating point specifiers \verb|[efg]| (< 128)\\
+      \verb|A| & \verb|ALTERNATIVE_STYLE| \todo{means what?}\\
+      \verb|[DTdxsefg]| &
+        \begin{minipage}[t]{\linewidth}
+          Format specifier\\
+          \begin{tabular}{l p{.7\linewidth}}
+            \texttt{[DT]} & ISO timestamp with microsecond precision\\
+            \texttt{d} & Signed/Unsigned integer (using C-style
+              \verb|%lld|/\verb|%llu| for \texttt{int}/\texttt{count})\\
+            \texttt{x} & Unsigned hexadecimal (using C-style \verb|%llx|);
+              addresses/ports are converted to host-byte order\\
+            \texttt{s} & Escaped string\\
+            \texttt{[efg]} & Double\\
+          \end{tabular}
+        \end{minipage}\\
+    \end{tabular}
+  \item \verb|type_name(t: any): string|\\
+    Returns the type name of \texttt{t}.
+  % TODO: maybe to low-level for the cheat sheet?
+  \item \verb|record_type_to_vector(rt: string): vector of string|\\
+    Converts the record type name \texttt{rt} into a vector of strings, where
+    each element is the name of a record field. Nested records are flattened.
+  \item \verb|to_int(s: string): int|\\
+    Converts a \texttt{string} into a (signed) integer.
+  \item \verb|int_to_count(n: int): count|\\
+    Converts a positive integer into a \texttt{count} or returns 0 if
+    \texttt{n < 0}. 
+  \item \verb|double_to_count(d: double): count|\\
+    Converts a positive \texttt{double} into a \texttt{count} or returns 0 if
+    \texttt{d < 0.0}. 
+  \item \verb|to_count(s: string): count|\\
+    Converts a \texttt{string} into a \texttt{count}.
 \end{itemize}
 
 \subsubsection*{String Processing}
