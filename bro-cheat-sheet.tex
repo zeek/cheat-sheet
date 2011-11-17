@@ -185,7 +185,7 @@ Declaration \dotfill \verb|record { a: T, b: U, ... }|\\
 Constructor \dotfill \verb|record($a=x, $b=y, ...)|\\
 Assignment \dotfill \texttt{\textit{scope}} \verb|r = [$a=x, $b=y, ...]|\\
 Access \dotfill \verb|z = r$a|\\
-Assignment \dotfill \verb|r$b = y|\\
+Field assignment \dotfill \verb|r$b = y|\\
 Deletion \dotfill \verb|delete r$a|\\
 
 \minisec{Sets}
@@ -193,7 +193,7 @@ Declaration \dotfill \verb|set[T]|\\
 Constructor \dotfill \verb|set(x, ...)|\\
 Assignment \dotfill \texttt{\textit{scope}} \verb|s = { x, ... }|\\
 Access \dotfill \verb|z = s[x]|\\
-Addition \dotfill \verb|add s[x]|\\
+Insertion \dotfill \verb|add s[x]|\\
 Deletion \dotfill \verb|delete s[x]|\\
 
 \minisec{Tables}
@@ -201,7 +201,7 @@ Declaration \dotfill \verb|table[T] of U|\\
 Constructor \dotfill \verb|table([x] = y, ...)|\\
 Assignment \dotfill \texttt{\textit{scope}} \verb|t = { [x] = y, ... }|\\
 Access \dotfill \verb|z = t[x]|\\
-Assignment \dotfill \verb|t[x] = y|\\
+Insertion \dotfill \verb|t[x] = y|\\
 Deletion \dotfill \verb|delete t[x]|\\
 
 \minisec{Vectors}
@@ -209,7 +209,7 @@ Declaration \dotfill \verb|vector of T|\\
 Constructor \dotfill \verb|vector(x, ...)|\\
 Assignment \dotfill \texttt{\textit{scope}} \verb|v = { x, ... }|\\
 Access \dotfill \verb|z = v[0]|\\
-Assignment \dotfill \verb|v[42] = x|
+Insertion \dotfill \verb|v[42] = x|
 % FIXME: not yet supported in Bro, see #679.
 %Deletion \dotfill \verb|delete v[3]|
 \end{multicols*}
