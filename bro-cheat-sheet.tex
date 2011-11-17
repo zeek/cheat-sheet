@@ -325,6 +325,39 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
     \texttt{d < 0.0}.
   \item \verb|to_count(s: string): count|\\
     Converts a \texttt{string} into a \texttt{count}.
+  \item \verb|interval_to_double(i: interval): double|\\
+    Converts an \texttt{interval} time span into a \texttt{double}.
+  \item \verb|double_to_interval(d: double): interval|\\
+    Converts a \texttt{double} into an \texttt{interval}.
+  \item \verb|time_to_double(t: time): double|\\
+    Converts a \texttt{time} value into a \texttt{double}.
+  \item \verb|double_to_time(d: double): time|\\
+    Converts a \texttt{double} into a \texttt{time} value.
+  \item \verb|double_to_time(d: double): time|\\
+    Converts a \texttt{double} into a \texttt{time} value.
+  \item \verb|port_to_count(p: port): count|\\
+    Returns the port number of \texttt{p} as \texttt{count}.
+  \item \verb|count_to_port(c: count, t: transport_proto): port|\\
+    Create a \texttt{port} with number \texttt{c} and transport protocol
+    \texttt{t}.
+  \item \verb|to_port(c count, t: transport_proto): port|\\
+    Same as \verb|count_to_port|.
+  \item \verb|addr_to_count(a: addr): count|\\
+    Converts an IP address into a 32-bit unsigned integer.
+  \item \verb|count_to_v4_addr(ip: count): addr|\\
+    Converts an unsigned integer into an IP address.
+  \item \verb|to_addr(ip: string): addr|\\
+    Converts a \texttt{string} into an IP address.
+  \item \verb|raw_bytes_to_v4_addr(b: string): addr|\\
+    Converts a \texttt{string} of bytes into an IP address. It interprets the
+    first 4 bytes of \texttt{b} as an IPv4 address in network order.
+\end{itemize}
+
+\subsubsection*{Math}
+
+\begin{itemize}
+  \item \verb|floor(d: double): double|\\
+    Chops off any decimal digits, i.e., computes $\lfloor\mathtt{d}\rfloor$.
 \end{itemize}
 
 \subsubsection*{String Processing}
