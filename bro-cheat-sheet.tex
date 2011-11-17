@@ -66,7 +66,7 @@ Download: & \url{https://github.com/broids/cheat-sheet}
 
 Lowercase letters represent instance variables and uppercase letters represent
 types. In general, \texttt{x} is an instance of type \texttt{T} and \texttt{y}
-and instance of type \texttt{U}. Argument names and record fields begin begin
+an instance of type \texttt{U}. Argument names and record fields begin begin
 with \texttt{a}, \texttt{b},~\ldots, and \texttt{z} represents a default
 instance variable which takes on the type of the right-hand side expression.
 For notational convenience, \texttt{x} can often be replaced with an expression
@@ -111,28 +111,28 @@ Print expression to \texttt{stdout} \dotfill \texttt{print \textit{expr}}\\
 \textsc{Branching}
 \begin{alltt}
 if (\textit{expr})
-    \dots
+    \{ \ldots \}
 else if (\textit{expr})
-    \dots
+    \{ \ldots \}
 else
-    \dots
+    \{ \ldots \}
 \end{alltt}
 
 \textsc{Iteration}
 \begin{alltt}
 for (i in x)
-    \dots
+    \{ \ldots \}
 \end{alltt}
 
-\textsc{Conditional}
+\textsc{Asynchronous}
 \begin{alltt}
-when (\textit{expr})
-    \dots
+when (\textit{expr}) \{ \ldots \}
+when (local x = \textit{expr}) \{ \ldots \}
 \end{alltt}
 \vspace{-10pt}
 
 \begin{alltt}
-\textrm{\textsc{Control}}\vspace{5pt}
+\textsc{Control}\vspace{5pt}
 break
 continue
 next
@@ -182,6 +182,7 @@ Assignment \dotfill \texttt{\textit{scope}} \verb|x = FOO|\\
 
 \minisec{Records}
 Declaration \dotfill \verb|record { a: T, b: U, ... }|\\
+Constructor \dotfill \verb|record($a=x, $b=y, ...)|\\
 Assignment \dotfill \texttt{\textit{scope}} \verb|r = [$a=x, $b=y, ...]|\\
 Access \dotfill \verb|z = r$a|\\
 Assignment \dotfill \verb|r$b = y|\\
@@ -189,7 +190,7 @@ Deletion \dotfill \verb|delete r$a|\\
 
 \minisec{Sets}
 Declaration \dotfill \verb|set[T]|\\
-Constructor \dotfill \verb|set()|\\
+Constructor \dotfill \verb|set(x, ...)|\\
 Assignment \dotfill \texttt{\textit{scope}} \verb|s = { x, ... }|\\
 Access \dotfill \verb|z = s[x]|\\
 Addition \dotfill \verb|add s[x]|\\
@@ -197,18 +198,18 @@ Deletion \dotfill \verb|delete s[x]|\\
 
 \minisec{Tables}
 Declaration \dotfill \verb|table[T] of U|\\
-Constructor \dotfill \verb|table()|\\
+Constructor \dotfill \verb|table([x] = y, ...)|\\
 Assignment \dotfill \texttt{\textit{scope}} \verb|t = { [x] = y, ... }|\\
 Access \dotfill \verb|z = t[x]|\\
-Assignment \dotfill \verb|add t[x] = y|\\
+Assignment \dotfill \verb|t[x] = y|\\
 Deletion \dotfill \verb|delete t[x]|\\
 
 \minisec{Vectors}
 Declaration \dotfill \verb|vector of T|\\
-Constructor \dotfill \verb|vector()|\\
+Constructor \dotfill \verb|vector(x, ...)|\\
 Assignment \dotfill \texttt{\textit{scope}} \verb|v = { x, ... }|\\
 Access \dotfill \verb|z = v[0]|\\
-Assignment \dotfill \verb|v[42] = x|\\
+Assignment \dotfill \verb|v[42] = x|
 % FIXME: not yet supported in Bro, see #679.
 %Deletion \dotfill \verb|delete v[3]|
 \end{multicols*}
@@ -223,7 +224,7 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
 \verb|&optional| \dotfill Allow record field to be missing\\
 \verb|&default=x| \dotfill Use default value \texttt{x} for record fields and
   container elements\\
-\verb|&redef| \dotfill Make constants redefinable\\
+\verb|&redef| \dotfill Allow for redefinition of initial object value\\
 % Users should use the logging framework instead.
 %\verb|&rotate_interval=x| \dotfill Rotate file after time \verb|x|\\
 %\verb|&rotate_size=x| \dotfill Rotate file after reaching size limit \verb|x|\\
@@ -250,7 +251,7 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
   a file\\
 \verb|&mergeable| \dotfill Prefer set union to assignment for synchronized
   state\\
-\verb|&priority=x| \dotfill Execution priority of event handler\\
+\verb|&priority=x| \dotfill Execution priority of event handler, high to low, $\mathtt{x} \in [-10,10]$\\
 \verb|&group="x"| \dotfill Events in the same group can be jointly
   activated/deactivated\\
 \verb|&log| \dotfill Write record field to log \\
@@ -334,9 +335,11 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
   \item \verb|sub_bytes(s: string, start: count, n: int): string|\\
     Get a substring of \texttt{s}, starting at position \texttt{start} and
     having length \texttt{n}.
-  \item \verb|split(s string, re: pattern): table[count] of string|\\
+  \item \verb|split(s: string, re: pattern): table[count] of string|\\
     Split \texttt{s} into an array using \texttt{re} to separate the elements.
-  \item \verb|split1(s string, re: pattern): table[count] of string|\\
+    The returned table starts at index 1. Note that conceptually the return
+    value is meant to be a vector and this might change in the future.
+  \item \verb|split1(s: string, re: pattern): table[count] of string|\\
     Same as \texttt{split}, but \texttt{s} is only split once (if possible) at
     the earliest position and an array of two strings is returned. An array of
     one string is returned when \texttt{s} cannot be split.
@@ -364,7 +367,7 @@ split_n(s: string, re: pattern, incl_sep: bool,
   \item \verb|sub(s: string, re: pattern, repl: string): string|\\
     Substitutes \texttt{repl} for the first occurrence of \texttt{re} in
     \texttt{s}.
-  \item \verb|gsub(s string, re: pattern, repl: string): string|\\
+  \item \verb|gsub(s: string, re: pattern, repl: string): string|\\
     Same as \texttt{sub} except that all occurrences of \texttt{re} are
     replaced.
   \item \verb|strcmp(s1: string, s2: string): int|
@@ -372,7 +375,7 @@ split_n(s: string, re: pattern, incl_sep: bool,
     greater than, equal to, or less than 0 according as \texttt{s1} is greater
     than, equal to, or less than \texttt{s2}.
   \item \verb|strstr(big: string, little: string): count|\\
-    Locate the first occurence of \texttt{litle} in \texttt{big}.
+    Locate the first occurrence of \texttt{little} in \texttt{big}.
     Returns 0 if \texttt{little} is not found in \texttt{big}.
   \item \verb|subst_string(s: string, from: string, to: string): string|\\
     Substitute each (non-overlapping) appearance of \texttt{from} in
@@ -415,7 +418,7 @@ split_n(s: string, re: pattern, incl_sep: bool,
     Takes a string and escapes characters that would allow execution of
     commands at the shell level. Must be used before including strings in
     \texttt{system()} or similar calls.
-  \item \verb|find_all(s: string, re: pattern) : string_set|\\
+  \item \verb|find_all(s: string, re: pattern) : set of string|\\
     Returns all occurrences of \texttt{re} in \texttt{s} (or an empty empty set
     if none).
   \item \verb|find_last(s: string, re: pattern) : string|\\
