@@ -335,37 +335,128 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
     Removes all elements from the set or table \texttt{v}.
 \end{itemize}
 
-\subsubsection*{Files and Directories}
+\subsubsection*{String Processing}
 
 \begin{itemize}
-  \item \verb|open(f: string): file|\\
-    Opens the file identified by \texttt{f} for writing. Returns a handle
-    for subsequent file operations.
-  \item \verb|open_for_append(f: string): file|\\
-    Same as \texttt{open}, except that \texttt{f} is not overwritten and
-    content is appended at the end of the file.
-  \item \verb|close(f: file): bool|\\
-    Closes the file handle \texttt{f} and flushes buffered content. Returns
-    true on success.
-  \item \verb|active_file(f: file): bool|\\
-    Checks whether \texttt{f} is open.
-  \item \verb|write_file(f: file, data: string): bool|\\
-    Writes \texttt{data} to \texttt{f}. Returns true on success.
-  \item \verb|get_file_name(f: file): string|\\
-    Returns the filename of the file identified by the handle \texttt{f}.
-  \item \verb|set_buf(f: file, buffered: bool): any|\\
-    Alters the buffering behavior of \texttt{f}. When \texttt{buffered} is
-    true, the file is fully buffered, i.e., bytes are saved in a buffered until
-    the block size has been reached. When \texttt{buffered} is false, the file
-    is line buffered, i.e., bytes are saved up until a newline occurs. The
-    return value is \texttt{void} and can be discarded.
-    \todo{Why is it not void then?}
-  \item \verb|flush_all(): bool|\\
-    Flushes all open files to disk.
-    Returns true when the operations(s) succeeded.
-  \item \verb|mkdir(f: string): bool|\\
-    Creates a new directory identified by \texttt{f}. Returns true if the
-    operation succeeded and \texttt{f} does not exist already.
+  \item \verb|byte_len(s: string): count|\\
+    Returns the number of characters (i.e., bytes) of \texttt{s}.
+  \item \verb|sub_bytes(s: string, start: count, n: int): string|\\
+    Get a substring of \texttt{s}, starting at position \texttt{start} and
+    having length \texttt{n}.
+  \item \verb|split(s: string, re: pattern): table[count] of string|\\
+    Split \texttt{s} into an array using \texttt{re} to separate the elements.
+    The returned table starts at index 1. Note that conceptually the return
+    value is meant to be a vector and this might change in the future.
+  \item \verb|split1(s: string, re: pattern): table[count] of string|\\
+    Same as \texttt{split}, but \texttt{s} is only split once (if possible) at
+    the earliest position and an array of two strings is returned. An array of
+    one string is returned when \texttt{s} cannot be split.
+  \item \verb|split_all(s: string, re: pattern): table[count] of string|\\
+    Same as \texttt{split}, but also include the matching separators, e.g.,
+    \verb|split_all("a-b--cd", /(\-)+/)| returns
+    \verb|{"a", "-", "b", "--", "cd"}|. Odd-indexed elements do not match the
+    pattern and even-indexed ones do.
+  \item
+\begin{verbatim}
+split_n(s: string, re: pattern, incl_sep: bool,
+        max_num_sep: count): table[count] of string
+\end{verbatim}
+    Similar to \verb|split1| and \verb|split_all|, but \verb|incl_sep|
+    indicates whether to include matching separators and \verb|max_num_sep| the
+    number of times to split \texttt{s}.
+%  \item
+%\begin{verbatim}
+%function split_complete(s string, re: pattern,
+%                        other: set[string], incl_sep: bool,
+%                        max_num_sep: count): table[count] of string
+%\end{verbatim}
+%    Same as \verb|split_n|, except that the extra parameter \texttt{other} is
+%    not used.
+  \item \verb|sub(s: string, re: pattern, repl: string): string|\\
+    Substitutes \texttt{repl} for the first occurrence of \texttt{re} in
+    \texttt{s}.
+  \item \verb|gsub(s: string, re: pattern, repl: string): string|\\
+    Same as \texttt{sub} except that all occurrences of \texttt{re} are
+    replaced.
+  \item \verb|strcmp(s1: string, s2: string): int|
+    Lexicographically compare \texttt{s1} and \texttt{s2}. Returns an integer
+    greater than, equal to, or less than 0 according as \texttt{s1} is greater
+    than, equal to, or less than \texttt{s2}.
+  \item \verb|strstr(big: string, little: string): count|\\
+    Locate the first occurrence of \texttt{little} in \texttt{big}.
+    Returns 0 if \texttt{little} is not found in \texttt{big}.
+  \item \verb|subst_string(s: string, from: string, to: string): string|\\
+    Substitute each (non-overlapping) appearance of \texttt{from} in
+    \texttt{s} to \texttt{to}, and return the resulting string.
+  \item \verb|to_lower(s: string): string|\\
+    Returns a copy of \texttt{s} with each letter converted to lower case.
+  \item \verb|to_upper(s: string): string|\\
+    Returns a copy of \texttt{s} with each letter converted to upper case.
+  \item \verb|clean(s: string): string|\\
+    Replace non-printable characters in \texttt{s} with escaped sequences,
+    with the mappings
+    \verb|0| $\rightarrow$ \verb|\0|,
+    \verb|DEL| $\rightarrow$ \verb|^?|,
+    values $\le 26$ $\rightarrow$ \verb|^[A-Z]|,
+    and values not in $[32, 126]$~$\rightarrow$~\verb|%XX|.
+  \item \verb|to_string_literal(s: string): string|\\
+    Same as clean, but with different mappings:
+    values not in $[32, 126]$~$\rightarrow$~\verb|%XX|,
+    \verb|\|~$\rightarrow$~\verb|\\|,
+    \verb|'|~$\rightarrow$~\verb|\'|,
+    \verb|"|~$\rightarrow$~\verb|\"|.
+  \item \verb|is_ascii(s: string): bool|\\
+    Returns false if any byte value of \texttt{s} is greater than 127, and true
+    otherwise.
+  \item \verb|escape_string(s: string): string|\\
+    Returns a printable version of \texttt{s}. Same as \texttt{clean} except
+    that non-printable characters are removed.
+  \item \verb|string_to_ascii_hex(s: string): string|\\
+    Returns an ASCII hexadecimal representation of a string.
+  \item \verb|str_split(s: string, idx: vector of count): vector of string|\\
+    Splits \texttt{s} into substrings, taking all the indices in
+    \texttt{idx} as cutting points; \texttt{idx} does not need to be sorted and
+    out-of-bounds indices are ignored.
+  \item \verb|strip(s: string): string|\\
+    Strips whitespace at both ends of \texttt{s}.
+  \item \verb|string_fill(len: int, source: string): string|\\
+    Generates a string of size \texttt{len} and fills it with repetitions of
+    \texttt{source}.
+  \item \verb|str_shell_escape(source: string): string|\\
+    Takes a string and escapes characters that would allow execution of
+    commands at the shell level. Must be used before including strings in
+    \texttt{system()} or similar calls.
+  \item \verb|find_all(s: string, re: pattern) : set of string|\\
+    Returns all occurrences of \texttt{re} in \texttt{s} (or an empty empty set
+    if none).
+  \item \verb|find_last(s: string, re: pattern) : string|\\
+    Returns the last occurrence of \texttt{re} in \texttt{s}. If not found,
+    returns an empty string.  Note that this function returns the match that
+    starts at the largest index in the string, which is not necessarily the
+    longest match.  For example, a pattern of \texttt{/.*/} will return the
+    final character in the string.
+  \item \verb|hexdump(data: string) : string|\\
+    Returns a hex dump for \texttt{data}. The hex dump renders 16 bytes per
+    line, with hex on the left and ASCII (where printable) on the right. Based
+    on Netdude's hex editor code.
+\end{itemize}
+
+\subsubsection*{Math}
+
+\begin{itemize}
+  \item \verb|floor(x: double): double|\\
+    Chops off any decimal digits of \texttt{x},
+    i.e., computes $\lfloor\mathtt{x}\rfloor$.
+  \item \verb|sqrt(x: double): double|\\
+    Returns the square root of \texttt{x}, i.e., computes $\sqrt{\mathtt{x}}$.
+  \item \verb|exp(x: double): double|\\
+    Raises $e$ to the power of \texttt{x}, i.e., computes $e^\mathtt{x}$.
+  \item \verb|ln(x: double): double|\\
+    Returns the natural logarithm of \texttt{x},
+    i.e., computes $\ln \mathtt{x}$.
+  \item \verb|log10(x: double): double|\\
+    Returns the common logarithm of \texttt{x},
+    i.e., computes $\log_{10} \mathtt{x}$.
 \end{itemize}
 
 \subsubsection*{Conversion}
@@ -487,128 +578,37 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
     Returns the transport protocol of \texttt{p}.
 \end{itemize}
 
-\subsubsection*{Math}
+\subsubsection*{Files and Directories}
 
 \begin{itemize}
-  \item \verb|floor(x: double): double|\\
-    Chops off any decimal digits of \texttt{x},
-    i.e., computes $\lfloor\mathtt{x}\rfloor$.
-  \item \verb|sqrt(x: double): double|\\
-    Returns the square root of \texttt{x}, i.e., computes $\sqrt{\mathtt{x}}$.
-  \item \verb|exp(x: double): double|\\
-    Raises $e$ to the power of \texttt{x}, i.e., computes $e^\mathtt{x}$.
-  \item \verb|ln(x: double): double|\\
-    Returns the natural logarithm of \texttt{x},
-    i.e., computes $\ln \mathtt{x}$.
-  \item \verb|log10(x: double): double|\\
-    Returns the common logarithm of \texttt{x},
-    i.e., computes $\log_{10} \mathtt{x}$.
-\end{itemize}
-
-\subsubsection*{String Processing}
-
-\begin{itemize}
-  \item \verb|byte_len(s: string): count|\\
-    Returns the number of characters (i.e., bytes) of \texttt{s}.
-  \item \verb|sub_bytes(s: string, start: count, n: int): string|\\
-    Get a substring of \texttt{s}, starting at position \texttt{start} and
-    having length \texttt{n}.
-  \item \verb|split(s: string, re: pattern): table[count] of string|\\
-    Split \texttt{s} into an array using \texttt{re} to separate the elements.
-    The returned table starts at index 1. Note that conceptually the return
-    value is meant to be a vector and this might change in the future.
-  \item \verb|split1(s: string, re: pattern): table[count] of string|\\
-    Same as \texttt{split}, but \texttt{s} is only split once (if possible) at
-    the earliest position and an array of two strings is returned. An array of
-    one string is returned when \texttt{s} cannot be split.
-  \item \verb|split_all(s: string, re: pattern): table[count] of string|\\
-    Same as \texttt{split}, but also include the matching separators, e.g.,
-    \verb|split_all("a-b--cd", /(\-)+/)| returns
-    \verb|{"a", "-", "b", "--", "cd"}|. Odd-indexed elements do not match the
-    pattern and even-indexed ones do.
-  \item
-\begin{verbatim}
-split_n(s: string, re: pattern, incl_sep: bool,
-        max_num_sep: count): table[count] of string
-\end{verbatim}
-    Similar to \verb|split1| and \verb|split_all|, but \verb|incl_sep|
-    indicates whether to include matching separators and \verb|max_num_sep| the
-    number of times to split \texttt{s}.
-%  \item
-%\begin{verbatim}
-%function split_complete(s string, re: pattern,
-%                        other: set[string], incl_sep: bool,
-%                        max_num_sep: count): table[count] of string
-%\end{verbatim}
-%    Same as \verb|split_n|, except that the extra parameter \texttt{other} is
-%    not used.
-  \item \verb|sub(s: string, re: pattern, repl: string): string|\\
-    Substitutes \texttt{repl} for the first occurrence of \texttt{re} in
-    \texttt{s}.
-  \item \verb|gsub(s: string, re: pattern, repl: string): string|\\
-    Same as \texttt{sub} except that all occurrences of \texttt{re} are
-    replaced.
-  \item \verb|strcmp(s1: string, s2: string): int|
-    Lexicographically compare \texttt{s1} and \texttt{s2}. Returns an integer
-    greater than, equal to, or less than 0 according as \texttt{s1} is greater
-    than, equal to, or less than \texttt{s2}.
-  \item \verb|strstr(big: string, little: string): count|\\
-    Locate the first occurrence of \texttt{little} in \texttt{big}.
-    Returns 0 if \texttt{little} is not found in \texttt{big}.
-  \item \verb|subst_string(s: string, from: string, to: string): string|\\
-    Substitute each (non-overlapping) appearance of \texttt{from} in
-    \texttt{s} to \texttt{to}, and return the resulting string.
-  \item \verb|to_lower(s: string): string|\\
-    Returns a copy of \texttt{s} with each letter converted to lower case.
-  \item \verb|to_upper(s: string): string|\\
-    Returns a copy of \texttt{s} with each letter converted to upper case.
-  \item \verb|clean(s: string): string|\\
-    Replace non-printable characters in \texttt{s} with escaped sequences,
-    with the mappings
-    \verb|0| $\rightarrow$ \verb|\0|,
-    \verb|DEL| $\rightarrow$ \verb|^?|,
-    values $\le 26$ $\rightarrow$ \verb|^[A-Z]|,
-    and values not in $[32, 126]$~$\rightarrow$~\verb|%XX|.
-  \item \verb|to_string_literal(s: string): string|\\
-    Same as clean, but with different mappings:
-    values not in $[32, 126]$~$\rightarrow$~\verb|%XX|,
-    \verb|\|~$\rightarrow$~\verb|\\|,
-    \verb|'|~$\rightarrow$~\verb|\'|,
-    \verb|"|~$\rightarrow$~\verb|\"|.
-  \item \verb|is_ascii(s: string): bool|\\
-    Returns false if any byte value of \texttt{s} is greater than 127, and true
-    otherwise.
-  \item \verb|escape_string(s: string): string|\\
-    Returns a printable version of \texttt{s}. Same as \texttt{clean} except
-    that non-printable characters are removed.
-  \item \verb|string_to_ascii_hex(s: string): string|\\
-    Returns an ASCII hexadecimal representation of a string.
-  \item \verb|str_split(s: string, idx: vector of count): vector of string|\\
-    Splits \texttt{s} into substrings, taking all the indices in
-    \texttt{idx} as cutting points; \texttt{idx} does not need to be sorted and
-    out-of-bounds indices are ignored.
-  \item \verb|strip(s: string): string|\\
-    Strips whitespace at both ends of \texttt{s}.
-  \item \verb|string_fill(len: int, source: string): string|\\
-    Generates a string of size \texttt{len} and fills it with repetitions of
-    \texttt{source}.
-  \item \verb|str_shell_escape(source: string): string|\\
-    Takes a string and escapes characters that would allow execution of
-    commands at the shell level. Must be used before including strings in
-    \texttt{system()} or similar calls.
-  \item \verb|find_all(s: string, re: pattern) : set of string|\\
-    Returns all occurrences of \texttt{re} in \texttt{s} (or an empty empty set
-    if none).
-  \item \verb|find_last(s: string, re: pattern) : string|\\
-    Returns the last occurrence of \texttt{re} in \texttt{s}. If not found,
-    returns an empty string.  Note that this function returns the match that
-    starts at the largest index in the string, which is not necessarily the
-    longest match.  For example, a pattern of \texttt{/.*/} will return the
-    final character in the string.
-  \item \verb|hexdump(data: string) : string|\\
-    Returns a hex dump for \texttt{data}. The hex dump renders 16 bytes per
-    line, with hex on the left and ASCII (where printable) on the right. Based
-    on Netdude's hex editor code.
+  \item \verb|open(f: string): file|\\
+    Opens the file identified by \texttt{f} for writing. Returns a handle
+    for subsequent file operations.
+  \item \verb|open_for_append(f: string): file|\\
+    Same as \texttt{open}, except that \texttt{f} is not overwritten and
+    content is appended at the end of the file.
+  \item \verb|close(f: file): bool|\\
+    Closes the file handle \texttt{f} and flushes buffered content. Returns
+    true on success.
+  \item \verb|active_file(f: file): bool|\\
+    Checks whether \texttt{f} is open.
+  \item \verb|write_file(f: file, data: string): bool|\\
+    Writes \texttt{data} to \texttt{f}. Returns true on success.
+  \item \verb|get_file_name(f: file): string|\\
+    Returns the filename of the file identified by the handle \texttt{f}.
+  \item \verb|set_buf(f: file, buffered: bool): any|\\
+    Alters the buffering behavior of \texttt{f}. When \texttt{buffered} is
+    true, the file is fully buffered, i.e., bytes are saved in a buffered until
+    the block size has been reached. When \texttt{buffered} is false, the file
+    is line buffered, i.e., bytes are saved up until a newline occurs. The
+    return value is \texttt{void} and can be discarded.
+    \todo{Why is it not void then?}
+  \item \verb|flush_all(): bool|\\
+    Flushes all open files to disk.
+    Returns true when the operations(s) succeeded.
+  \item \verb|mkdir(f: string): bool|\\
+    Creates a new directory identified by \texttt{f}. Returns true if the
+    operation succeeded and \texttt{f} does not exist already.
 \end{itemize}
 
 \end{multicols*}
