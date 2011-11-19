@@ -262,13 +262,110 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
 \subsubsection*{Core}
 
 \begin{itemize}
+    %
+    % Introspection
+    %
+  \item \verb|current_time(): time|\\
+    Returns the current wall-clock time.
+  \item \verb|network_time(): time|\\
+    Returns the timestamp of the last packet processed.
+  \item \verb|reading_live_traffic(): bool|\\
+    Checks whether Bro reads traffic from a network interface (as opposed to
+    from a network trace).
+  \item \verb|reading_traces(): bool|\\
+    Checks whether Bro reads traffic from a trace file (as opposed to
+    from a network interface).
+  \item \verb|getenv(var: string): string|\\
+    Returns the system environment variable identified by \texttt{var}.
+  \item \verb|setenv(var: string, val: string): bool|\\
+    Sets the system environment variable \texttt{var} to \texttt{val}.
+  \item \verb|exit(): int|
+    Shuts down the Bro process immediately and returns 0.
+  \item \verb|terminate(): bool|
+    Gracefully shut down Bro by terminating outstanding processing. Returns
+    true after successful termination and false when Bro is still in the
+    process of shutting down.
+  \item \verb|system(s: string): int|\\
+    Invokes a command via the \texttt{system} function.
+    Returns true if the return value of \texttt{system} was non-zero.
+  \item \verb|system_env(s: string, env: any): int|\\
+    Same as \verb|system|, but prepare the environment before invoking the
+    command \texttt{s} with the set/table \texttt{env}.
+  \item \verb|skip_further_processing(id: conn_id): bool|\\
+    Stops processing packets belonging to the connection identified by
+    \texttt{id}.
+    Returns false if \texttt{id} does not point to an active connection and
+    true otherwise.
+    Note that this does not in itself imply that packets from this connection
+    will not be recorded, which is controlled separately by
+    \verb|set_record_packets|.
+    \todo{Someone please verify this.}
+  \item \verb|set_record_packets(id: conn_id, do_record: bool): bool|\\
+    Controls whether packet contents belonging to the connection identified by
+    \texttt{id} should be recorded.
+    Note that this is independent of whether Bro processes the packets of this
+    connection, which is controlled separately by
+    \verb|skip_further_processing|.
+    \todo{Someone please verify this.}
+  \item \verb|set_contents_file(id: conn_id, direction: count, f: file): bool|\\
+    Associates the file handle \texttt{f} with the connection identified by
+    \texttt{id} for writing TCP byte stream contents. The argument
+    \texttt{direction} controls what sides of the connection contents are
+    recorded; it can take on four values:
+    \verb|CONTENTS_NONE| to turn off recording of contents,
+    \verb|CONTENTS_ORIG| to record originator contents,
+    \verb|CONTENTS_RESP| to record responder contents,
+    and \verb|CONTENTS_BOTH| to record both originator and responder contents.
+    Returns false if \texttt{id} does not point to an active connection and
+    true otherwise.
+  \item \verb|get_contents_file(id: conn_id, direction: count): file|\\
+    Returns the file handle associated with the connection identified by
+    \texttt{id} and \texttt{direction}. If the connection exists but no
+    contents file for \texttt{direction}, the function returns a handle to new
+    file. If not active connection for \texttt{id} exists, it returns an error.
+    %
+    % Generic functions
+    %
+  \item \verb|same_object(o1: any, o2: any): bool|\\
+    Checks whether \texttt{o1} and \texttt{o2} reference the same internal
+    object.
   \item \verb|length(v: any): count|\\
     Returns the number of elements in the container \texttt{v}.
-  \item \verb|same_object(o1: any, o2: any): bool|\\
-    Check whether \texttt{o1} and \texttt{o2} reference the same internal
-    object.
   \item \verb|clear_table(v: any): any|\\
-    Remove all elements from the set or table \texttt{v}.
+    Removes all elements from the set or table \texttt{v}.
+\end{itemize}
+
+\subsubsection*{Files and Directories}
+
+\begin{itemize}
+  \item \verb|open(f: string): file|\\
+    Opens the file identified by \texttt{f} for writing. Returns a handle
+    for subsequent file operations.
+  \item \verb|open(f: string): file|\\
+    Same as \texttt{open}, except that \texttt{f} is not overwritten and
+    content is appended at the end of the file.
+  \item \verb|close(f: file): bool|\\
+    Closes the file handle \texttt{f} and flushes buffered content. Returns
+    true on success.
+  \item \verb|active_file(f: file): bool|\\
+    Checks whether \texttt{f} is open.
+  \item \verb|write_file(f: file, data: string): bool|\\
+    Writes \texttt{data} to \texttt{f}. Returns true on success.
+  \item \verb|get_file_name(f: file): string|\\
+    Returns the filename of the file identified by the handle \texttt{f}.
+  \item \verb|set_buf(f: file, buffered: bool): any|\\
+    Alters the buffering behavior of \texttt{f}. When \texttt{buffered} is
+    true, the file is fully buffered, i.e., bytes are saved in a buffered until
+    the block size has been reached. When \texttt{buffered} is false, the file
+    is line buffered, i.e., bytes are saved up until a newline occurs. The
+    return value is \texttt{void} and can be discarded.
+    \todo{Why is it not void then?}
+  \item \verb|flush_all(): bool|\\
+    Flushes all open files to disk.
+    Returns true when the operations(s) succeeded.
+  \item \verb|mkdir(f: string): bool|\\
+    Creates a new directory identified by \texttt{f}. Returns true if the
+    operation succeeded and \texttt{f} does not exist already.
 \end{itemize}
 
 \subsubsection*{Conversion}
@@ -340,7 +437,7 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
   \item \verb|count_to_port(c: count, t: transport_proto): port|\\
     Create a \texttt{port} with number \texttt{c} and transport protocol
     \texttt{t}.
-  \item \verb|to_port(c count, t: transport_proto): port|\\
+  \item \verb|to_port(c: count, t: transport_proto): port|\\
     Same as \verb|count_to_port|.
   \item \verb|addr_to_count(a: addr): count|\\
     Converts an IP address into a 32-bit unsigned integer.
@@ -353,11 +450,57 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
     first 4 bytes of \texttt{b} as an IPv4 address in network order.
 \end{itemize}
 
+\subsubsection*{Network Type Processing}
+
+\begin{itemize}
+  \item \verb|mask_addr(a: addr, top_bits_to_keep: count): subnet|\\
+    Creates a subnet mask from \texttt{a} by specifying the number of top bits
+    to keep. For example, \verb|mask_addr(10.5.1.3, 8)| would return
+    \verb|10.0.0.0/8|.
+  \item \verb|remask_addr(a1: addr, a2: addr, top_bits_from_a1: count): count|\\
+    Takes some top bits (e.g., subnet address) from \texttt{a1} and the other
+    bits (intra-subnet part) from \texttt{a2} and merge them to get a new
+    address. This is useful for anonymizing at subnet level while preserving
+    serial scans.
+  \item \verb|is_tcp_port(p: port): bool|\\
+    Checks whether \texttt{p} is a TCP port.
+  \item \verb|is_udp_port(p: port): bool|\\
+    Checks whether \texttt{p} is a UDP port.
+  \item \verb|is_icmp_port(p: port): bool|\\
+    Checks whether \texttt{p} is an ICMP port.
+  \item \verb|active_connection(id: conn_id): bool|\\
+    Checks whether the connection identified by \texttt{id} is (still) active.
+  \item \verb|connection_exists(id: conn_id): bool|\\
+    Same as \verb|active_connection|. \todo{Which one should we remove?}
+  \item \verb|connection_record(id: conn_id): connection|\\
+    Returns the \texttt{connection} record for \texttt{id}.
+    Note that you \emph{must} first make sure that the connection is active
+    (e.g., by calling \verb|active_connection|).
+  \item \verb|lookup_connection(id: conn_id): connection|\\
+    Same as \verb|lookup_connection|. \todo{Which one should we remove?}
+  \item \verb|get_conn_transport_proto(id: conn_id): transport_proto|\\
+    Returns the transport protocol of the connection identified by \texttt{id}.
+    As with \verb|connection_record|, \texttt{id} must point to an active
+    connection.
+  \item \verb|get_port_transport_proto(p: port): transport_proto|\\
+    Returns the transport protocol of \texttt{p}.
+\end{itemize}
+
 \subsubsection*{Math}
 
 \begin{itemize}
-  \item \verb|floor(d: double): double|\\
-    Chops off any decimal digits, i.e., computes $\lfloor\mathtt{d}\rfloor$.
+  \item \verb|floor(x: double): double|\\
+    Chops off any decimal digits, i.e., computes $\lfloor\mathtt{x}\rfloor$.
+  \item \verb|sqrt(x: double): double|\\
+    Returns the square root of \texttt{x}, i.e., computes $\sqrt{\mathtt{x}}$.
+  \item \verb|sqrt(x: double): double|\\
+    Raises $e$ to the power of \texttt{x}, i.e., computes $e^\mathtt{x}$.
+  \item \verb|ln(x: double): double|\\
+    Returns the natural logarithm of \texttt{x},
+    i.e., computes $\ln \mathtt{x}$.
+  \item \verb|log10(x: double): double|\\
+    Returns the common logarithm of \texttt{x},
+    i.e., computes $\log_{10} \mathtt{x}$.
 \end{itemize}
 
 \subsubsection*{String Processing}
