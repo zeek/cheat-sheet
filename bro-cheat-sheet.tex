@@ -341,7 +341,7 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
   \item \verb|open(f: string): file|\\
     Opens the file identified by \texttt{f} for writing. Returns a handle
     for subsequent file operations.
-  \item \verb|open(f: string): file|\\
+  \item \verb|open_for_append(f: string): file|\\
     Same as \texttt{open}, except that \texttt{f} is not overwritten and
     content is appended at the end of the file.
   \item \verb|close(f: file): bool|\\
