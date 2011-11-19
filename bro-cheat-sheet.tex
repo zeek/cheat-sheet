@@ -373,9 +373,10 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
 \begin{itemize}
   \item \verb|cat(...): string|\\
     Concatenates all given arguments into a single string.
-  \item \verb|cat_sep(sep: string, def: string, ...): string|\\
+  \item \verb|cat_sep(sep: string, default: string, ...): string|\\
     Similar to cat, but places \texttt{sep} between each given argument.
-    \todo{what does \texttt{def} do?}
+    If any of the variable arguments is an empty string it is replaced by
+    \texttt{default} instead.
   \item \verb|fmt(...): string|\\
     Produces a formatted string. The first argument is the \emph{format string}
     and specifies how subsequent arguments are converted for output. It is
