@@ -268,25 +268,12 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
 \subsubsection*{Core}
 
 \begin{itemize}
-    %
-    % Introspection
-    %
-  \item \verb|current_time(): time|\\
-    Returns the current wall-clock time.
-  \item \verb|network_time(): time|\\
-    Returns the timestamp of the last packet processed.
-  \item \verb|reading_live_traffic(): bool|\\
-    Checks whether Bro reads traffic from a network interface (as opposed to
-    from a network trace).
-  \item \verb|reading_traces(): bool|\\
-    Checks whether Bro reads traffic from a trace file (as opposed to
-    from a network interface).
   \item \verb|getenv(var: string): string|\\
     Returns the system environment variable identified by \texttt{var}.
   \item \verb|setenv(var: string, val: string): bool|\\
     Sets the system environment variable \texttt{var} to \texttt{val}.
-  \item \verb|exit(): int|
-    Shuts down the Bro process immediately and returns 0.
+  \item \verb|exit()|
+    Shuts down the Bro process immediately.
   \item \verb|terminate(): bool|
     Gracefully shut down Bro by terminating outstanding processing. Returns
     true after successful termination and false when Bro is still in the
@@ -297,6 +284,87 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
   \item \verb|system_env(s: string, env: any): int|\\
     Same as \verb|system|, but prepare the environment before invoking the
     command \texttt{s} with the set/table \texttt{env}.
+  \item \verb|srand(seed: count)|\\
+    Set the seed for subsequent \verb|rand| calls.
+  \item \verb|rand(max: count): count|\\
+    Returns a random value from the interval $[0, \mathtt{max})$.
+  \item \verb|md5_hash(...): string|\\
+    Computes the MD5 hash value of the provided list of arguments.
+% FIXME: md5_hmac has the same signature as md5_hash.
+%\item \verb|md5_hmac(...): string|
+  \item \verb|md5_hash_init(index: any): bool|\\
+    Initializes MD5 state for \texttt{index} to allow for computing hash values
+    incrementally via the function \verb|md5_hash_update|. For example, when
+    computing incremental MD5 values of transferred files in multiple
+    concurrent HTTP connections, it is necessary to call
+    \verb|md5_hash_init(c$id)| once before invoking
+    \verb|md5_hash_update(c$id, some_more_data)| in the \verb|http_entity_data|
+    event handler.
+  \item \verb|function md5_hash_update(index: any, data: string): bool|\\
+    Update the MD5 value associated with \texttt{index}. Note that it is
+    necessary to call \verb|md5_hash_init(index)| once before calling this
+    function to initialize the MD5 state.
+  \item \verb|md5_hash_finish(index: any): string|\\
+    Returns the final MD5 digest associated with the internal state identified
+    by \texttt{index}.
+% FIXME: move to an appropriate subsection.
+  \item \verb|clear_table(v: any|\\
+    Removes all elements from the set or table \texttt{v}.
+\end{itemize}
+
+\subsubsection*{Introspection}
+
+\begin{itemize}
+  \item \verb|current_time(): time|\\
+    Returns the current wall-clock time.
+  \item \verb|network_time(): time|\\
+    Returns the timestamp of the last packet processed.
+  \item \verb|reading_live_traffic(): bool|\\
+    Checks whether Bro reads traffic from a network interface (as opposed to
+    from a network trace).
+  \item \verb|reading_traces(): bool|\\
+    Checks whether Bro reads traffic from a trace file (as opposed to
+    from a network interface).
+  \item \verb|net_stats(): NetStats|\\
+    Returns statistics about the number of packets
+    \first received by Bro,
+    \second dropped,
+    and \third seen on the link (not always available).
+  \item \verb|resource_usage(): bro_resources|\\
+    Returns Bro process statistics, such as real/user/sys CPU time, memory
+    usage, page faults, number of TCP/UDP/ICMP connections, timers, and events
+    queued/dispatched.
+  \item \verb|get_matcher_stats(): matcher_stats|\\
+    Returns statistics about the regular expression engine, such as the number
+    of distinct matchers, DFA states, DFA state transitions, memory usage of
+    DFA states, cache hits/misses, and average number of NFA states across all
+    matchers.
+  \item \verb|get_gap_summary(): gap_info|\\
+    Returns statistics about TCP gaps.
+  \item \verb|same_object(o1: any, o2: any): bool|\\
+    Checks whether \texttt{o1} and \texttt{o2} reference the same internal
+    object.
+  \item \verb|length(v: any): count|\\
+    Returns the number of elements in the container \texttt{v}.
+  \item \verb|val_size(v: any): count|\\
+    Returns the number bytes that \texttt{v} occupies in memory.
+  \item \verb|global_sizes(): table[string] of count|\\
+    Returns a table containing the size of all global variables, where the
+    index is the variable name and the value the variable size in bytes.
+  \item \verb|global_ids(): table[string] of script_id|\\
+    Returns a table with information about all global identifiers. The table
+    value is a record containing the type name of the identifier, whether it is
+    exported, a constant, an enum constant, redefinable, and its value (if it
+    has one).
+  \item \verb|record_fields(r: any): table[string] of record_field|\\
+    Returns meta data about a record instance \texttt{r}, which includes the
+    type name, whether the field is logged, its value (if it has one), and its
+    default value (if specified).
+\end{itemize}
+
+\subsubsection*{Analyzer Behavior}
+
+\begin{itemize}
   \item \verb|skip_further_processing(id: conn_id): bool|\\
     Stops processing packets belonging to the connection identified by
     \texttt{id}.
@@ -329,16 +397,12 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
     \texttt{id} and \texttt{direction}. If the connection exists but no
     contents file for \texttt{direction}, the function returns a handle to new
     file. If not active connection for \texttt{id} exists, it returns an error.
-    %
-    % Generic functions
-    %
-  \item \verb|same_object(o1: any, o2: any): bool|\\
-    Checks whether \texttt{o1} and \texttt{o2} reference the same internal
-    object.
-  \item \verb|length(v: any): count|\\
-    Returns the number of elements in the container \texttt{v}.
-  \item \verb|clear_table(v: any): any|\\
-    Removes all elements from the set or table \texttt{v}.
+  \item \verb|skip_http_entity_data(c: connection, is_orig: bool)|\\
+    Skips the data of the HTTP entity in the connection \texttt{c}. If
+    \verb|is_orig| is true, the client data is skipped and the server data
+    otherwise.
+  \item \verb|skip_smtp_data(c: connection)|\\
+    Skips SMTP data until the next email in \texttt{c}.
 \end{itemize}
 
 \subsubsection*{String Processing}
@@ -431,7 +495,7 @@ split_n(s: string, re: pattern, incl_sep: bool,
   \item \verb|str_shell_escape(source: string): string|\\
     Takes a string and escapes characters that would allow execution of
     commands at the shell level. Must be used before including strings in
-    \texttt{system()} or similar calls.
+    \verb|system| or similar calls.
   \item \verb|find_all(s: string, re: pattern) : set of string|\\
     Returns all occurrences of \texttt{re} in \texttt{s} (or an empty empty set
     if none).
@@ -482,7 +546,6 @@ split_n(s: string, re: pattern, incl_sep: bool,
     each of which fetches zero or more subsequent arguments. Conversion
     specifications begin with \verb|%| and the arguments must properly
     correspond to the specifier.
-
     After the \verb|%|, the following characters may appear in sequence:
     \begin{tabular}{l l}
       \verb|%| & Literal \verb|%|\\
@@ -546,6 +609,47 @@ split_n(s: string, re: pattern, incl_sep: bool,
   \item \verb|raw_bytes_to_v4_addr(b: string): addr|\\
     Converts a \texttt{string} of bytes into an IP address. It interprets the
     first 4 bytes of \texttt{b} as an IPv4 address in network order.
+  \item \verb|ptr_name_to_addr(s: string): addr|\\
+    Converts a reverse pointer name to an address, e.g.,
+    \verb|1.0.168.192.in-addr.arpa| to \verb|192.168.0.1|.
+  \item \verb|addr_to_ptr_name(a: addr): string|\\
+    Converts an IP address to a reverse pointer name, e.g.,
+    \verb|192.168.0.1| to \verb|1.0.168.192.in-addr.arpa|.
+  \item \verb|parse_dotted_addr(s: string): addr|\\
+    Converts a decimal dotted IP address in a string to an address type.
+  \item \verb|parse_ftp_port(s: string): ftp_port|\\
+    Converts a string representation of the FTP PORT command to an
+    \verb|ftp_port|,
+    e.g., \verb|"10,0,0,1,4,31"| to \verb|[h=10.0.0.1, p=1055/tcp, valid=T]|
+  \item \verb|parse_eftp_port(s: string): ftp_port|\\
+    Same as as \verb|parse_ftp_port|, but instead for EPRT
+    (see~\href{http://tools.ietf.org/html/rfc2428}{RFC 2428}) whose format is
+    \verb|EPRT<space><d><net-prt><d><net-addr><d><tcp-port><d>|, where
+    \verb|<d>| is a delimiter in the ASCII range 33-126 (usually \verb#|#).
+  \item \verb|parse_ftp_pasv(s: string): ftp_port|\\
+    Converts the result of the FTP PASV command to an \verb|ftp_port|.
+  \item \verb|parse_ftp_epsv(s: string): ftp_port|\\
+    Same as \verb|parse_ftp_pasv|, but instead for the EPSV
+    (see~\href{http://tools.ietf.org/html/rfc2428}{RFC 2428}) whose format is
+    \verb|<text> (<d><d><d><tcp-port><d>)|, where \verb|<d>| is a delimiter in
+    the ASCII range 33-126 (usually \verb#|#).
+  \item \verb|fmt_ftp_port(a: addr, p: port): string|\\
+    Formats the IP address \texttt{a} and TCP port \texttt{p} as an FTP
+    PORT command, e.g., \verb|10.0.0.1| and \verb|1055/tcp| to
+    \verb|"10,0,0,1,4,31"|.
+  \item \verb|decode_netbios_name(name: string): string|\\
+    Decode a \href{http://support.microsoft.com/kb/194203}{NetBIOS name}, e.g.,
+    \verb|"FEEIEFCAEOEFFEECEJEPFDCAEOEBENEF"| to \verb|"THE NETBIOS NAME"|.
+  \item \verb|decode_netbios_name_type(name: string): count|\\
+    Converts the \href{http://support.microsoft.com/kb/163409}{NetBIOS name
+    type} to the corresponding numeric value.
+  \item \verb|bytestring_to_hexstr(bytestring: string): string|\\
+    Converts a string of bytes into its hexadecimal representation, e.g.,
+    \verb|"04"| to \verb|"3034"|.
+  \item \verb|decode_base64(s: string): string|\\
+    Decode the Base64-encoded string \verb|s|.
+  \item \verb|decode_base64_custom(s: string, a: string): string|\\
+    Decode the Base64-encoded string \verb|s| with alphabet \verb|a|.
 \end{itemize}
 
 \subsubsection*{Network Type Processing}
@@ -582,6 +686,30 @@ split_n(s: string, re: pattern, incl_sep: bool,
     connection.
   \item \verb|get_port_transport_proto(p: port): transport_proto|\\
     Returns the transport protocol of \texttt{p}.
+  \item \verb|set_inactivity_timeout(id: conn_id, t: interval): interval|\\
+    Sets an individual inactivity timeout for the connection identified by
+    \texttt{id} (overrides the global inactivity timeout).
+    Returns the previous timeout interval.
+    % TODO: are the next two functions worth keeping in the cheat sheet?
+  \item \verb|get_login_state(id: conn_id): count|\\
+    Returns the login state of the connection identified by \texttt{id}.
+    Returns false if \texttt{id} is not an active connection or does not tagged
+    as login analyzer. Otherwise the function returns the login state as
+    a \texttt{count}.
+  \item \verb|set_login_state(id: conn_id, new_state: count): bool|\\
+    Sets the login state of the connection identified by \verb|id| to
+    \verb|new_state|. Returns false if \texttt{id} is not an active connection
+    or does not tagged as login analyzer, and true otherwise.
+  \item \verb|get_resp_seq(id: conn_id): count|\\
+    Returns the responder TCP sequence number of the connection identified by
+    \texttt{id}. If the connection is not active or not TCP, it returns 0.
+  \item \verb|unescape_URI(URI: string): string|\\
+    Unescapes all characters in \texttt{URI}, i.e., decodes every \verb|%xx|
+    group.
+% TODO: wait for answer on bro-dev about these functions.
+%  \item \verb|preserve_prefix(a: addr, width: count)|\\
+%  \item \verb|preserve_subnet(sn: subnet)|\\
+%  \item \verb|anonymize_addr(a: addr, cl: IPAddrAnonymizationClass): addr|\\
 \end{itemize}
 
 \subsubsection*{Files and Directories}
@@ -601,14 +729,12 @@ split_n(s: string, re: pattern, incl_sep: bool,
   \item \verb|write_file(f: file, data: string): bool|\\
     Writes \texttt{data} to \texttt{f}. Returns true on success.
   \item \verb|get_file_name(f: file): string|\\
-    Returns the filename of the file identified by the handle \texttt{f}.
-  \item \verb|set_buf(f: file, buffered: bool): any|\\
+    Returns the filename associated with \texttt{f}.
+  \item \verb|set_buf(f: file, buffered: bool)|\\
     Alters the buffering behavior of \texttt{f}. When \texttt{buffered} is
     true, the file is fully buffered, i.e., bytes are saved in a buffered until
     the block size has been reached. When \texttt{buffered} is false, the file
-    is line buffered, i.e., bytes are saved up until a newline occurs. The
-    return value is \texttt{void} and can be discarded.
-    \todo{Why is it not void then?}
+    is line buffered, i.e., bytes are saved up until a newline occurs.
   \item \verb|flush_all(): bool|\\
     Flushes all open files to disk.
     Returns true when the operations(s) succeeded.
