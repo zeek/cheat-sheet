@@ -257,7 +257,9 @@ behavior. The syntax is \verb|&key| or \verb|&key=val|, e.g.,
   a file\\
 \verb|&mergeable| \dotfill Prefer set union to assignment for synchronized
   state\\
-\verb|&priority=x| \dotfill Execution priority of event handler, high to low, $\mathtt{x} \in [-10,10]$\\
+\verb|&priority=x| \dotfill Execution priority of event handler, higher values
+first, default 0\\
+  %$\mathtt{x} \in [-10,10]$ by convention\\
 \verb|&group="x"| \dotfill Events in the same group can be jointly
   activated/deactivated\\
 \verb|&log| \dotfill Write record field to log \\
