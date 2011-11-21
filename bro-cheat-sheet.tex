@@ -600,8 +600,8 @@ split_n(s: string, re: pattern, incl_sep: bool,
   \item \verb|count_to_port(c: count, t: transport_proto): port|\\
     Create a \texttt{port} with number \texttt{c} and transport protocol
     \texttt{t}.
-  \item \verb|to_port(c: count, t: transport_proto): port|\\
-    Same as \verb|count_to_port|.
+  \item \verb|to_port(s: string): port|\\
+    Converts a \texttt{string} into a \texttt{port}.
   \item \verb|addr_to_count(a: addr): count|\\
     Converts an IP address into a 32-bit unsigned integer.
   \item \verb|count_to_v4_addr(ip: count): addr|\\
