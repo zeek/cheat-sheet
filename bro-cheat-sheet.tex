@@ -292,8 +292,6 @@ first, default 0\\
     Returns a random value from the interval $[0, \mathtt{max})$.
   \item \verb|md5_hash(...): string|\\
     Computes the MD5 hash value of the provided list of arguments.
-% FIXME: md5_hmac has the same signature as md5_hash.
-%\item \verb|md5_hmac(...): string|
   \item \verb|md5_hash_init(index: any): bool|\\
     Initializes MD5 state for \texttt{index} to allow for computing hash values
     incrementally via the function \verb|md5_hash_update|. For example, when
@@ -309,6 +307,10 @@ first, default 0\\
   \item \verb|md5_hash_finish(index: any): string|\\
     Returns the final MD5 digest associated with the internal state identified
     by \texttt{index}.
+  \item \verb|md5_hmac(...): string|\\
+    Computes an HMAC-MD5 hash value of the provided list of arguments. The HMAC
+    secret key is generated from available entropy when Bro starts up, or it
+    can be specified for repeatability using the new \texttt{-K} flag.
 % FIXME: move to an appropriate subsection.
   \item \verb|clear_table(v: any|\\
     Removes all elements from the set or table \texttt{v}.
