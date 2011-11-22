@@ -271,7 +271,8 @@ first, default 0\\
 
 \begin{itemize}
   \item \verb|getenv(var: string): string|\\
-    Returns the system environment variable identified by \texttt{var}.
+    Returns the system environment variable identified by \texttt{var}, or an
+    empty string if it is not defined.
   \item \verb|setenv(var: string, val: string): bool|\\
     Sets the system environment variable \texttt{var} to \texttt{val}.
   \item \verb|exit()|
@@ -288,6 +289,12 @@ first, default 0\\
   \item \verb|system(s: string): int|\\
     Invokes a command via the \texttt{system} function.
     Returns true if the return value of \texttt{system} was non-zero.
+    Returns the return value from the \texttt{system()} call. Note that this
+    corresponds to the status of backgrounding the given command, not to the
+    exit status of the command itself. A value of 127 corresponds to a failure
+    to execute \verb|sh|, and -1 to an internal system failure. Furthermore,
+    the command is run in the background with \verb|stdout| redirected to
+    \verb|stderr|.
   \item \verb|system_env(s: string, env: any): int|\\
     Same as \verb|system|, but prepare the environment before invoking the
     command \texttt{s} with the set/table \texttt{env}.
@@ -316,7 +323,10 @@ first, default 0\\
     Computes an HMAC-MD5 hash value of the provided list of arguments. The HMAC
     secret key is generated from available entropy when Bro starts up, or it
     can be specified for repeatability using the new \texttt{-K} flag.
+\end{itemize}
+
 % FIXME: move to an appropriate subsection.
+\begin{itemize}
   \item \verb|clear_table(v: any|\\
     Removes all elements from the set or table \texttt{v}.
 \end{itemize}
@@ -328,9 +338,17 @@ first, default 0\\
     Returns the current wall-clock time.
   \item \verb|network_time(): time|\\
     Returns the timestamp of the last packet processed.
+    Returns the timestamp of the most recently read packet, whether read from a
+    live network interface or from a save file. Compare against
+    \verb|current_time|. In general, you should use \verb|network_time| unless
+    you're using Bro for non-networking uses (such as general scripting; not
+    particularly recommended), because otherwise your script may behave very
+    differently on live traffic versus played-back traffic from a save file.
   \item \verb|reading_live_traffic(): bool|\\
-    Checks whether Bro reads traffic from a network interface (as opposed to
-    from a network trace).
+    Checks whether Bro reads traffic from one or more network interfaces (as
+    opposed to from a network trace in a file). Note that this function returns
+    true even after Bro has stopped reading network traffic, for example due to
+    receiving a termination signal.
   \item \verb|reading_traces(): bool|\\
     Checks whether Bro reads traffic from a trace file (as opposed to
     from a network interface).
@@ -375,12 +393,14 @@ first, default 0\\
 
 \begin{itemize}
   \item \verb|skip_further_processing(id: conn_id): bool|\\
-    Stops processing packets belonging to the connection identified by
-    \texttt{id}.
+    Informs bro that it should skip any further processing of the contents of
+    the connection identified by \verb|id|. In particular, Bro will refrain
+    from reassembling the TCP byte stream and from generating events relating
+    to any analyzers that have been processing the connection. Bro will still
+    generate connection-oriented events such as \verb|connection_finished|.
     Returns false if \texttt{id} does not point to an active connection and
-    true otherwise.
-    Note that this does not in itself imply that packets from this connection
-    will not be recorded, which is controlled separately by
+    true otherwise. Note that this does not in itself imply that packets from
+    this connection will not be recorded, which is controlled separately by
     \verb|set_record_packets|.
   \item \verb|set_record_packets(id: conn_id, do_record: bool): bool|\\
     Controls whether packet contents belonging to the connection identified by
@@ -394,12 +414,21 @@ first, default 0\\
     \texttt{id} for writing TCP byte stream contents. The argument
     \texttt{direction} controls what sides of the connection contents are
     recorded; it can take on four values:
-    \verb|CONTENTS_NONE| to turn off recording of contents,
-    \verb|CONTENTS_ORIG| to record originator contents,
-    \verb|CONTENTS_RESP| to record responder contents,
-    and \verb|CONTENTS_BOTH| to record both originator and responder contents.
+    \begin{itemize}
+      \item \verb|CONTENTS_NONE|: Stop recording the connection's content.
+      \item \verb|CONTENTS_ORIG|: Record the data sent by the connection
+        originator (often the client).
+      \item \verb|CONTENTS_RESP|: Record the data sent by the connection
+        responder (often the server).
+      \item \verb|CONTENTS_BOTH|: Record the data sent in both directions.
+        Results in the two directions being intermixed in the file, in the
+        order the data was seen by Bro.
+    \end{itemize}
     Returns false if \texttt{id} does not point to an active connection and
-    true otherwise.
+    true otherwise. Note that the data recorded to the file reflects the byte
+    stream, not the contents of individual packets. Reordering and duplicates
+    are removed. If any data is missing, the recording stops at the missing
+    data; this can happen, e.g., due to an \verb|ack_above_hole| event.
   \item \verb|get_contents_file(id: conn_id, direction: count): file|\\
     Returns the file handle associated with the connection identified by
     \texttt{id} and \texttt{direction}. If the connection exists but no
@@ -470,9 +499,13 @@ split_n(s: string, re: pattern, incl_sep: bool,
     Substitute each (non-overlapping) appearance of \texttt{from} in
     \texttt{s} to \texttt{to}, and return the resulting string.
   \item \verb|to_lower(s: string): string|\\
-    Returns a copy of \texttt{s} with each letter converted to lower case.
+    Returns a copy of the given string with the lowercase letters (as indicated
+    by \verb|isascii| and \verb|islower|) folded to uppercase (via
+    \verb|toupper|).
   \item \verb|to_upper(s: string): string|\\
-    Returns a copy of \texttt{s} with each letter converted to upper case.
+    Returns a copy of \verb|s| with the uppercase letters (as indicated by
+    \verb|isascii| and \verb|isupper|) folded to lowercase (via
+    \verb|tolower|).
   \item \verb|function edit(arg_s: string, arg_edit_char: string): string|\\
     Returns a version of s assuming that \verb|edit_char| is the ``backspace
     character'' (usually \verb|\x08| for backspace or \verb|\x7f| for DEL). For
@@ -619,8 +652,8 @@ split_n(s: string, re: pattern, incl_sep: bool,
     Converts a \texttt{double} into a \texttt{time} value.
   \item \verb|port_to_count(p: port): count|\\
     Returns the port number of \texttt{p} as \texttt{count}.
-  \item \verb|count_to_port(c: count, t: transport_proto): port|\\
-    Creates a \texttt{port} with number \texttt{c} and transport protocol
+  \item \verb|count_to_port(num: count, t: transport_proto): port|\\
+    Creates a \texttt{port} with number \texttt{num} and transport protocol
     \texttt{t}.
   \item \verb|to_port(s: string): port|\\
     Converts a \texttt{string} into a \texttt{port}.
@@ -695,9 +728,10 @@ split_n(s: string, re: pattern, incl_sep: bool,
 
 \begin{itemize}
   \item \verb|mask_addr(a: addr, top_bits_to_keep: count): subnet|\\
-    Creates a subnet mask from \texttt{a} by specifying the number of top bits
-    to keep. For example, \verb|mask_addr(10.5.1.3, 8)| would return
-    \verb|10.0.0.0/8|.
+    Returns the address \verb|a| masked down to the number of upper bits
+    indicated by \verb|top_bits_to_keep|, which must be greater than 0 and less
+    than 33. For example, \verb|mask_addr(1.2.3.4, 18)| returns \verb|1.2.0.0|,
+    and \verb|mask_addr(1.2.255.4, 18)| returns \verb|1.2.192.0|.
   \item \verb|remask_addr(a1: addr, a2: addr, top_bits_from_a1: count): count|\\
     Takes some top bits (e.g., subnet address) from \texttt{a1} and the other
     bits (intra-subnet part) from \texttt{a2} and merge them to get a new
@@ -727,17 +761,34 @@ split_n(s: string, re: pattern, incl_sep: bool,
     Returns the previous timeout interval.
     % TODO: are the next two functions worth keeping in the cheat sheet?
   \item \verb|get_login_state(id: conn_id): count|\\
-    Returns the login state of the connection identified by \texttt{id}.
-    Returns false if \texttt{id} is not an active connection or does not tagged
-    as login analyzer. Otherwise the function returns the login state as
-    a \texttt{count}.
+    Returns the state of the given login (Telnet or Rlogin) connection
+    identified by \texttt{id}. Returns false if the connection is not active
+    or is not tagged as a login analyzer. Otherwise the function returns the
+    state, which can be one of:
+    \begin{itemize}
+      \item \verb|LOGIN_STATE_AUTHENTICATE|: The connection is in its initial
+        authentication dialog.
+      \item \verb|OGIN_STATE_LOGGED_IN|: The analyzer believes the user has
+        successfully authenticated.
+      \item \verb|LOGIN_STATE_SKIP|: The analyzer has skipped any further
+        processing of the connection.
+      \item \verb|LOGIN_STATE_CONFUSED|: The analyzer has concluded that it
+        does not correctly know the state of the connection, and/or the
+        username associated with it.
+    \end{itemize}
   \item \verb|set_login_state(id: conn_id, new_state: count): bool|\\
     Sets the login state of the connection identified by \verb|id| to
+    \verb|new_state|. See \verb|get_login_state| for potential values of
     \verb|new_state|. Returns false if \texttt{id} is not an active connection
     or does not tagged as login analyzer, and true otherwise.
+  \item \verb|get_orig_seq(id: conn_id): count|\\
+    Returns the highest sequence number sent by a connection's originator, or 0
+    if \verb|id| does not point to an active TCP connection. Sequence numbers
+    are absolute (i.e., they reflect the values seen directly in packet
+    headers; they are not relative to the beginning of the connection).
   \item \verb|get_resp_seq(id: conn_id): count|\\
-    Returns the responder TCP sequence number of the connection identified by
-    \texttt{id}. If the connection is not active or not TCP, it returns 0.
+    Returns the highest sequence number sent by a connection's responder, or 0
+    if \verb|id| does not point to an active TCP connection.
   \item \verb|unescape_URI(URI: string): string|\\
     Unescapes all characters in \texttt{URI}, i.e., decodes every \verb|%xx|
     group.
