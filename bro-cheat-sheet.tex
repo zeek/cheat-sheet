@@ -275,6 +275,11 @@ first, default 0\\
   \item \verb|setenv(var: string, val: string): bool|\\
     Sets the system environment variable \texttt{var} to \texttt{val}.
   \item \verb|exit()|
+    % TODO: Update this function signature to
+    %
+    %   exit(code: int)
+    %
+    % when the branch topic/bif_cleanup is merged into master.
     Shuts down the Bro process immediately.
   \item \verb|terminate(): bool|
     Gracefully shut down Bro by terminating outstanding processing. Returns
@@ -412,7 +417,10 @@ first, default 0\\
 
 \begin{itemize}
   \item \verb|byte_len(s: string): count|\\
-    Returns the number of characters (i.e., bytes) of \texttt{s}.
+    Returns the number of characters (i.e., bytes) in \texttt{s}.  This
+    includes any embedded NULs, and also a trailing NUL, if any (which is why
+    the function isn't called \verb|strlen|; to remind the user that Bro
+    strings can include NULs).
   \item \verb|sub_bytes(s: string, start: count, n: int): string|\\
     Get a substring of \texttt{s}, starting at position \texttt{start} and
     having length \texttt{n}.
@@ -465,13 +473,20 @@ split_n(s: string, re: pattern, incl_sep: bool,
     Returns a copy of \texttt{s} with each letter converted to lower case.
   \item \verb|to_upper(s: string): string|\\
     Returns a copy of \texttt{s} with each letter converted to upper case.
+  \item \verb|function edit(arg_s: string, arg_edit_char: string): string|\\
+    Returns a version of s assuming that \verb|edit_char| is the ``backspace
+    character'' (usually \verb|\x08| for backspace or \verb|\x7f| for DEL). For
+    example, \verb|edit("hello there", "e")| returns \verb|"llo t"|. The
+    argument \verb|edit_char| must be a string of exactly one character, or Bro
+    generates a run-time error and uses the first character in the string.
   \item \verb|clean(s: string): string|\\
     Replace non-printable characters in \texttt{s} with escaped sequences,
     with the mappings
     \verb|NUL| $\rightarrow$ \verb|\0|,
     \verb|DEL| $\rightarrow$ \verb|^?|,
     values $\le 26$ $\rightarrow$ \verb|^[A-Z]|,
-    and values not in $[32, 126]$~$\rightarrow$~\verb|%XX|.
+    and values not in $[32, 126]$~$\rightarrow$~\verb|%XX|. If the string does
+    yet have a trailing NUL, one is added.
   \item \verb|to_string_literal(s: string): string|\\
     Same as clean, but with different mappings:
     values not in $[32, 126]$~$\rightarrow$~\verb|%XX|,
@@ -536,7 +551,9 @@ split_n(s: string, re: pattern, incl_sep: bool,
 
 \begin{itemize}
   \item \verb|cat(...): string|\\
-    Concatenates all given arguments into a single string.
+    Returns the concatenation of the string representation of its arguments,
+    which can be of any type. For example, \verb|cat("foo", 3, T)| returns
+    \verb|"foo3T"|.
   \item \verb|cat_sep(sep: string, default: string, ...): string|\\
     Similar to cat, but places \texttt{sep} between each given argument.
     If any of the variable arguments is an empty string it is replaced by
@@ -570,6 +587,10 @@ split_n(s: string, re: pattern, incl_sep: bool,
           \end{tabular}
         \end{minipage}\\
     \end{tabular}
+    Given no arguments, \verb|fmt| returns an empty string. Given a non-string
+    first argument, \verb|fmt| returns the concatenation of all its arguments,
+    per \verb|cat|. Finally, given the wrong number of additional arguments for
+    the given format specifier, \verb|fmt| generates a run-time error.
   \item \verb|type_name(t: any): string|\\
     Returns the type name of \texttt{t}.
   % TODO: maybe to low-level for the cheat sheet?
@@ -650,9 +671,24 @@ split_n(s: string, re: pattern, incl_sep: bool,
     Converts a string of bytes into its hexadecimal representation, e.g.,
     \verb|"04"| to \verb|"3034"|.
   \item \verb|decode_base64(s: string): string|\\
-    Decode the Base64-encoded string \verb|s|.
+    Decodes the Base64-encoded string \verb|s|.
   \item \verb|decode_base64_custom(s: string, a: string): string|\\
-    Decode the Base64-encoded string \verb|s| with alphabet \verb|a|.
+    Decodes the Base64-encoded string \verb|s| with alphabet \verb|a|.
+  \item \verb|uuid_to_string%(uuid: string%): string|\\
+    Converts a bytes representation of a
+    \href{http://en.wikipedia.org/wiki/Universally_unique_identifier}{UUID} to
+    its string form, e.g., to \verb|550e8400-e29b-41d4-a716-446655440000|.
+  \item \verb|merge_pattern(p1: pattern, p2: pattern): pattern|\\
+    Merges and compiles the regular expressions \verb|p1| and \verb|p2| at
+    initialization time (e.g., in the event \verb|bro_init()|).
+  \item \verb|convert_for_pattern(s: string): string|\\
+    Escapes \verb|s| so that it is a valid pattern and can be used with the
+    \verb|string_to_pattern|. Concretly, any character
+    from the set \verb#^$-:"\/|*+?.(){}[]# is prefixed with \verb|\|.
+  \item \verb|string_to_pattern(s: string, convert: bool): pattern|\\
+    Converts \verb|s| into a pattern. If \verb|convert| is true, \verb|s| is
+    first passed through the function \verb|convert_for_pattern| to escape
+    special characters of patterns.
 \end{itemize}
 
 \subsubsection*{Network Type Processing}
