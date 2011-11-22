@@ -377,14 +377,13 @@ first, default 0\\
     Note that this does not in itself imply that packets from this connection
     will not be recorded, which is controlled separately by
     \verb|set_record_packets|.
-    \todo{Someone please verify this.}
   \item \verb|set_record_packets(id: conn_id, do_record: bool): bool|\\
     Controls whether packet contents belonging to the connection identified by
-    \texttt{id} should be recorded.
+    \texttt{id} should be recorded (when \texttt{-w \textit{out.pcap}} is
+    provided on the command line).
     Note that this is independent of whether Bro processes the packets of this
     connection, which is controlled separately by
     \verb|skip_further_processing|.
-    \todo{Someone please verify this.}
   \item \verb|set_contents_file(id: conn_id, direction: count, f: file): bool|\\
     Associates the file handle \texttt{f} with the connection identified by
     \texttt{id} for writing TCP byte stream contents. The argument
@@ -469,7 +468,7 @@ split_n(s: string, re: pattern, incl_sep: bool,
   \item \verb|clean(s: string): string|\\
     Replace non-printable characters in \texttt{s} with escaped sequences,
     with the mappings
-    \verb|0| $\rightarrow$ \verb|\0|,
+    \verb|NUL| $\rightarrow$ \verb|\0|,
     \verb|DEL| $\rightarrow$ \verb|^?|,
     values $\le 26$ $\rightarrow$ \verb|^[A-Z]|,
     and values not in $[32, 126]$~$\rightarrow$~\verb|%XX|.
@@ -674,16 +673,12 @@ split_n(s: string, re: pattern, incl_sep: bool,
     Checks whether \texttt{p} is a UDP port.
   \item \verb|is_icmp_port(p: port): bool|\\
     Checks whether \texttt{p} is an ICMP port.
-  \item \verb|active_connection(id: conn_id): bool|\\
-    Checks whether the connection identified by \texttt{id} is (still) active.
   \item \verb|connection_exists(id: conn_id): bool|\\
-    Same as \verb|active_connection|. \todo{Which one should we remove?}
-  \item \verb|connection_record(id: conn_id): connection|\\
-    Returns the \texttt{connection} record for \texttt{id}.
-    Note that you \emph{must} first make sure that the connection is active
-    (e.g., by calling \verb|active_connection|).
+    Checks whether the connection identified by \texttt{id} is (still) active.
   \item \verb|lookup_connection(id: conn_id): connection|\\
-    Same as \verb|lookup_connection|. \todo{Which one should we remove?}
+    Returns the \texttt{connection} record for \texttt{id}. If
+    \texttt{id} does not point to an existing connection, the function returns
+    a run-time error and returns a dummy value.
   \item \verb|get_conn_transport_proto(id: conn_id): transport_proto|\\
     Returns the transport protocol of the connection identified by \texttt{id}.
     As with \verb|connection_record|, \texttt{id} must point to an active
