@@ -368,8 +368,6 @@ first, default 0\\
   \item \verb|install_pcap_filter(id: PcapFilterID): bool|\\
     Installs a PCAP filter precompiled via \verb|precompile_pcap_filter|.
     Returns true if the installation succeeds.
-  \item \verb|pcap_error(): string|\\
-    Returns a descriptive error message if the last PCAP function failed.
   \item \verb|install_src_addr_filter(ip: addr, flags: count, p double): bool|\\
     Installs a filter to drop packets from the IP source address \verb|ip| with
     probability $\mathtt{p} \in [0,1]$ if none of the TCP flags given by
@@ -394,6 +392,8 @@ first, default 0\\
   \item \verb|uninstall_dst_net_filter(snet: subnet): bool|\\
     Removes an IP destination subnet filter for \verb|snet| installed with
     \verb|install_dst_net_filter|.
+  \item \verb|pcap_error(): string|\\
+    Returns a descriptive error message if the last PCAP function failed.
 \end{itemize}
 
 \subsubsection*{Introspection}
@@ -401,6 +401,15 @@ first, default 0\\
 \begin{itemize}
   \item \verb|bro_version(): string|\\
     Returns the Bro version string.
+  \item \verb|getpid(): count|\\
+    Returns Bro's process ID.
+  \item \verb|do_profiling()|\\
+    Enable detailed collections of statistics about CPU/memory usage,
+    connections, TCP states/reassembler, DNS lookups, timers, and script-level
+    state. The script variable \verb|profiling_file| holds the name of the log
+    file.
+  \item \verb|gethostname(): string|\\
+    Get the value of the hostname of the machine Bro runs on.
   \item \verb|current_time(): time|\\
     Returns the current wall-clock time.
   \item \verb|network_time(): time|\\
@@ -419,6 +428,8 @@ first, default 0\\
   \item \verb|reading_traces(): bool|\\
     Checks whether Bro reads traffic from a trace file (as opposed to
     from a network interface).
+  \item \verb|bro_is_terminating(): bool|\\
+    Returns true if Bro is in the process of shutting down.
   \item \verb|net_stats(): NetStats|\\
     Returns statistics about the number of packets
     \first received by Bro,
@@ -439,8 +450,6 @@ first, default 0\\
     \ReturnsTrueOnSuccess
   \item \verb|get_gap_summary(): gap_info|\\
     Returns statistics about TCP gaps.
-  \item \verb|val_size(v: any): count|\\
-    Returns the number bytes that \verb|v| occupies in memory.
   \item \verb|global_sizes(): table[string] of count|\\
     Returns a table containing the size of all global variables, where the
     index is the variable name and the value the variable size in bytes.
@@ -449,6 +458,10 @@ first, default 0\\
     value is a record containing the type name of the identifier, whether it is
     exported, a constant, an enum constant, redefinable, and its value (if it
     has one).
+  \item \verb|lookup_ID(id: string): any|\\
+    Returns the value of associated with the global identifier \verb|id|. If
+    \verb|id| does not describe a valid identifier, the function returns the
+    string \verb|"<unknown id>"| or \verb|"<no ID value>"|.
   \item \verb|record_fields(r: any): table[string] of record_field|\\
     Returns meta data about a record instance \verb|r|, which includes the
     type name, whether the field is logged, its value (if it has one), and its
@@ -456,33 +469,7 @@ first, default 0\\
   \item \verb|is_local_interface(ip: addr): bool|\\
     Returns true if the address \verb|ip| is a valid DNS entry for
     \texttt{localhost}.
-  \item \verb|bro_is_terminating(): bool|\\
-    Returns true if Bro is in the process of shutting down.
-  \item \verb|gethostname(): string|\\
-    Get the value of the hostname of the machine Bro runs on.
-  \item \verb|getpid(): count|\\
-    Returns Bro's process ID.
-  \item \verb|lookup_ID(id: string): any|\\
-    Returns the value of associated with the global identifier \verb|id|. If
-    \verb|id| does not describe a valid identifier, the function returns the
-    string \verb|"<unknown id>"| or \verb|"<no ID value>"|.
-  \item \verb|current_analyzer(): count|\\
-    Returns the ID of the analyzer which raised the current event, or 0 if no
-    analyzer has been instantiated.
-  \item \verb|analyzer_name(aid: count): string|\\
-    Translates the analyzer ID \verb|aid| to a string representation.
-  \item \begin{verbatim}
-expect_connection(orig: addr, resp: addr, resp_p: port,
-          				analyzer: count, tout: interval): bool
-    \end{verbatim}
-    Schedules an analyzer identified by the ID \verb|analyzer| for a future
-    connection from IP address \verb|orig| to \verb|resp| at port
-    \verb|resp_p|. The function ignores the scheduling request if the
-    connection did not occur within the time interval \verb|tout|.
-  \item \verb|disable_analyzer(id: conn_id, aid: count): bool|\\
-    Disables the analyzer \verb|aid| which raised the current event if it
-    belongs to connection identified by \verb|id|.
-  \item \verb|is_external_conenction(c: connection): bool|\\
+  \item \verb|is_external_connection(c: connection): bool|\\
     Returns true if the connection \verb|c| has been received externally.
     \todo{What does this mean?}
   \item \verb|disable_print_hook(f: file)|\\
@@ -588,11 +575,6 @@ connect(ip: addr, p: port, our_class: string, retry: interval,
   \item \verb|send_current_packet(p: event_peer): bool|\\
     Sends the currently processed packet to the remote peer \verb|p|.
     \ReturnsTrueOnSuccess
-  \item \verb|do_profiling()|\\
-    Enable detailed collections of statistics about CPU/memory usage,
-    connections, TCP states/reassembler, DNS lookups, timers, and script-level
-    state. The script variable \verb|profiling_file| holds the name of the log
-    file.
   \item \verb|get_event_peer(): event_peer|\\
     Returns the peer who generated that last raised event.
   \item \verb|get_local_event_peer(): event_peer|\\
@@ -608,8 +590,25 @@ connect(ip: addr, p: port, our_class: string, retry: interval,
 \subsubsection*{Analyzer Behavior}
 
 \begin{itemize}
+  \item \verb|current_analyzer(): count|\\
+    Returns the ID of the analyzer which raised the current event, or 0 if no
+    analyzer has been instantiated.
+  \item \verb|analyzer_name(aid: count): string|\\
+    Translates the analyzer ID \verb|aid| to a string representation.
+  \item
+\begin{verbatim}
+expect_connection(orig: addr, resp: addr, resp_p: port,
+          				analyzer: count, tout: interval): bool
+\end{verbatim}
+    Schedules the analyzer identified by the ID \verb|analyzer| for a future
+    connection from IP address \verb|orig| to \verb|resp| at port
+    \verb|resp_p|. The function ignores the scheduling request if the
+    connection did not occur within the specified time interval \verb|tout|.
+  \item \verb|disable_analyzer(id: conn_id, aid: count): bool|\\
+    Disables the analyzer \verb|aid| which raised the current event if it
+    belongs to connection identified by \verb|id|.
   \item \verb|skip_further_processing(id: conn_id): bool|\\
-    Informs bro that it should skip any further processing of the contents of
+    Informs Bro that it should skip any further processing of the contents of
     the connection identified by \verb|id|. In particular, Bro will refrain
     from reassembling the TCP byte stream and from generating events relating
     to any analyzers that have been processing the connection. Bro will still
@@ -665,6 +664,32 @@ connect(ip: addr, p: port, our_class: string, retry: interval,
   \item \verb|dump_packet(pkt: pcap_packet, file_name: string): bool|\\
     Writes the packet \verb|pkt| to the file identified by \verb|file_name|.
     \ReturnsTrueOnSuccess
+  \item \verb|set_inactivity_timeout(id: conn_id, t: interval): interval|\\
+    Sets an individual inactivity timeout for the connection identified by
+    \texttt{id} (overrides the global inactivity timeout).
+    Returns the previous timeout interval.
+    % TODO: are the next two functions worth keeping in the cheat sheet?
+  \item \verb|get_login_state(id: conn_id): count|\\
+    Returns the state of the given login (Telnet or Rlogin) connection
+    identified by \texttt{id}. Returns false if the connection is not active
+    or is not tagged as a login analyzer. Otherwise the function returns the
+    state, which can be one of:
+    \begin{itemize}
+      \item \verb|LOGIN_STATE_AUTHENTICATE|: The connection is in its initial
+        authentication dialog.
+      \item \verb|OGIN_STATE_LOGGED_IN|: The analyzer believes the user has
+        successfully authenticated.
+      \item \verb|LOGIN_STATE_SKIP|: The analyzer has skipped any further
+        processing of the connection.
+      \item \verb|LOGIN_STATE_CONFUSED|: The analyzer has concluded that it
+        does not correctly know the state of the connection, and/or the
+        username associated with it.
+    \end{itemize}
+  \item \verb|set_login_state(id: conn_id, new_state: count): bool|\\
+    Sets the login state of the connection identified by \verb|id| to
+    \verb|new_state|. See \verb|get_login_state| for potential values of
+    \verb|new_state|. Returns false if \texttt{id} is not an active connection
+    or does not tagged as login analyzer, and true otherwise.
 \end{itemize}
 
 \subsubsection*{Generic Programming}
@@ -675,6 +700,8 @@ connect(ip: addr, p: port, our_class: string, retry: interval,
     object.
   \item \verb|length(v: any): count|\\
     Returns the number of elements in the container \texttt{v}.
+  \item \verb|val_size(v: any): count|\\
+    Returns the number bytes that \verb|v| occupies in memory.
   \item \verb|clear_table(v: any)|\\
     Removes all elements from the set or table \texttt{v}.
   \item \verb|resize(v: any, newsize: count): count|.
@@ -683,20 +710,18 @@ connect(ip: addr, p: port, our_class: string, retry: interval,
     type.
   \item \verb|any_set(v: any): bool|\\
     Test whether the boolean vector (\verb|vector of bool|) has any true
-    element, i.e., returns the value of the expression
-    $\exists x \in \mathtt{v}: x = \mathtt{T}$.
+    element, i.e., checks whether $\exists x \in \mathtt{v}: x = \mathtt{T}$.
   \item \verb|all_set(v: any): bool|\\
     Test whether all elements of the boolean vector (\verb|vector of bool|) are
-    true, i.e., returns the value of the expression
-    $\forall x \in \mathtt{v}: x = \mathtt{T}$. Missing elements count as
-    false.
-  \item \verb|sort(v: any, ...): any|
+    true, i.e., checks whether $\forall x \in \mathtt{v}: x = \mathtt{T}$.
+    Missing elements count as false.
+  \item \verb|sort(v: any, ...): any|\\
     Sorts the vector \verb|v| in place and returns the original vector. 
     The second argument is a comparison function that takes two arguments: if
     the type of \verb|v| is \verb|vector of T|, then the comparison function is
     \verb|function(a: T, b: T): bool| that returns \verb|a < b| for some
     type-specific notion of the less-than operator.
-  \item \verb|order(v: any, ...): vector of count|
+  \item \verb|order(v: any, ...): vector of count|\\
     Returns the order of the elements in the vector \verb|v| according to some
     comparison function. See \verb|sort|.
 \end{itemize}
@@ -1061,32 +1086,6 @@ split_n(s: string, re: pattern, incl_sep: bool,
     connection.
   \item \verb|get_port_transport_proto(p: port): transport_proto|\\
     Returns the transport protocol of \texttt{p}.
-  \item \verb|set_inactivity_timeout(id: conn_id, t: interval): interval|\\
-    Sets an individual inactivity timeout for the connection identified by
-    \texttt{id} (overrides the global inactivity timeout).
-    Returns the previous timeout interval.
-    % TODO: are the next two functions worth keeping in the cheat sheet?
-  \item \verb|get_login_state(id: conn_id): count|\\
-    Returns the state of the given login (Telnet or Rlogin) connection
-    identified by \texttt{id}. Returns false if the connection is not active
-    or is not tagged as a login analyzer. Otherwise the function returns the
-    state, which can be one of:
-    \begin{itemize}
-      \item \verb|LOGIN_STATE_AUTHENTICATE|: The connection is in its initial
-        authentication dialog.
-      \item \verb|OGIN_STATE_LOGGED_IN|: The analyzer believes the user has
-        successfully authenticated.
-      \item \verb|LOGIN_STATE_SKIP|: The analyzer has skipped any further
-        processing of the connection.
-      \item \verb|LOGIN_STATE_CONFUSED|: The analyzer has concluded that it
-        does not correctly know the state of the connection, and/or the
-        username associated with it.
-    \end{itemize}
-  \item \verb|set_login_state(id: conn_id, new_state: count): bool|\\
-    Sets the login state of the connection identified by \verb|id| to
-    \verb|new_state|. See \verb|get_login_state| for potential values of
-    \verb|new_state|. Returns false if \texttt{id} is not an active connection
-    or does not tagged as login analyzer, and true otherwise.
   \item \verb|get_orig_seq(id: conn_id): count|\\
     Returns the highest sequence number sent by a connection's originator, or 0
     if \verb|id| does not point to an active TCP connection. Sequence numbers
