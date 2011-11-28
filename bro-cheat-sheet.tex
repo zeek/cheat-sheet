@@ -275,10 +275,10 @@ first, default 0\\
 
 \begin{itemize}
   \item \verb|getenv(var: string): string|\\
-    Returns the system environment variable identified by \texttt{var}, or an
+    Returns the system environment variable identified by \verb|var|, or an
     empty string if it is not defined.
   \item \verb|setenv(var: string, val: string): bool|\\
-    Sets the system environment variable \texttt{var} to \texttt{val}.
+    Sets the system environment variable \verb|var| to \verb|val|.
   \item \verb|exit()|
     % TODO: Update this function signature to
     %
@@ -290,6 +290,8 @@ first, default 0\\
     Gracefully shut down Bro by terminating outstanding processing. Returns
     true after successful termination and false when Bro is still in the
     process of shutting down.
+  \item \verb|syslog(s: string)|\\
+    Send the string \verb|s| to syslog.
   \item \verb|system(s: string): int|\\
     Invokes a command via the \texttt{system} function.
     Returns true if the return value of \texttt{system} was non-zero.
@@ -301,7 +303,10 @@ first, default 0\\
     \verb|stderr|.
   \item \verb|system_env(s: string, env: any): int|\\
     Same as \verb|system|, but prepare the environment before invoking the
-    command \texttt{s} with the set/table \texttt{env}.
+    command \verb|s| with the set/table \verb|env|.
+  \item \verb|piped_exec(program: string, to_write: string): bool|\\
+    Opens the application \verb|program| with \verb|popen| and writes the
+    string \verb|to_write| to \texttt{stdin} of the opened program. 
   \item \verb|srand(seed: count)|\\
     Set the seed for subsequent \verb|rand| calls.
   \item \verb|rand(max: count): count|\\
@@ -309,7 +314,7 @@ first, default 0\\
   \item \verb|md5_hash(...): string|\\
     Computes the MD5 hash value of the provided list of arguments.
   \item \verb|md5_hash_init(index: any): bool|\\
-    Initializes MD5 state for \texttt{index} to allow for computing hash values
+    Initializes MD5 state for \verb|index| to allow for computing hash values
     incrementally via the function \verb|md5_hash_update|. For example, when
     computing incremental MD5 values of transferred files in multiple
     concurrent HTTP connections, it is necessary to call
@@ -317,16 +322,40 @@ first, default 0\\
     \verb|md5_hash_update(c$id, some_more_data)| in the \verb|http_entity_data|
     event handler.
   \item \verb|function md5_hash_update(index: any, data: string): bool|\\
-    Update the MD5 value associated with \texttt{index}. Note that it is
+    Update the MD5 value associated with \verb|index|. Note that it is
     necessary to call \verb|md5_hash_init(index)| once before calling this
     function to initialize the MD5 state.
   \item \verb|md5_hash_finish(index: any): string|\\
     Returns the final MD5 digest associated with the internal state identified
-    by \texttt{index}.
+    by \verb|index|.
   \item \verb|md5_hmac(...): string|\\
     Computes an HMAC-MD5 hash value of the provided list of arguments. The HMAC
     secret key is generated from available entropy when Bro starts up, or it
     can be specified for repeatability using the new \texttt{-K} flag.
+  \item \verb|file_size(f: string): double|\\
+    Returns the file size in bytes of the file identified by \verb|f|.
+  \item \verb|strftime(fmt: string, d: time): string|\\
+    Formats the time value \verb|d| according to the format string \verb|fmt|.
+    See \verb|man strftime| for the format of \verb|fmt|.
+  \item \verb|lookup_addr(host: addr): string|\\
+    Issues an asynchronous reverse DNS lookup and delays the function result.
+    Therefore, it can only be called inside a \verb|when|-condition, e.g.,
+    \verb|when ( local host = lookup_addr(10.0.0.1) ) { f(host); }|.
+    Returns the DNS name of \verb|host|.
+  \item \verb|lookup_hostname(host: string): set[addr]|\\
+    Issues an asynchronous DNS lookup and delays the function result.
+    Returns a set containing the addresses that \verb|host| resolves to.
+    See \verb|lookup_addr| for a usage example.
+  \item \verb|identify_data(data: string, return_mime: bool): string|\\
+    Invokes \texttt{libmagic} on \verb|data| to determine its MIME type. If
+    \verb|return_mime| is true, the function returns a MIME type string instead
+    of a textual description.
+  \item \verb|unique_id(prefix: string): string|\\
+    Creates an identifier that is unique with high probability, with
+    \verb|prefix| prepended to the result.
+  \item \verb|unique_id_from(pool: int, prefix: string): string|\\
+    Same as \verb|unique_id|, except that the additional argument \verb|pool|
+    specifies a seed for determinism.
 \end{itemize}
 
 \subsubsection*{Packet Filtering}
@@ -370,6 +399,8 @@ first, default 0\\
 \subsubsection*{Introspection}
 
 \begin{itemize}
+  \item \verb|bro_version(): string|\\
+    Returns the Bro version string.
   \item \verb|current_time(): time|\\
     Returns the current wall-clock time.
   \item \verb|network_time(): time|\\
@@ -402,6 +433,10 @@ first, default 0\\
     of distinct matchers, DFA states, DFA state transitions, memory usage of
     DFA states, cache hits/misses, and average number of NFA states across all
     matchers.
+  \item \verb|dump_rule_stats(f: file): bool|\\
+    Write rule matcher statistics (DFA states, transitions, memory usage, cache
+    hits/misses) to the file \verb|f|.
+    \ReturnsTrueOnSuccess
   \item \verb|get_gap_summary(): gap_info|\\
     Returns statistics about TCP gaps.
   \item \verb|val_size(v: any): count|\\
@@ -421,6 +456,59 @@ first, default 0\\
   \item \verb|is_local_interface(ip: addr): bool|\\
     Returns true if the address \verb|ip| is a valid DNS entry for
     \texttt{localhost}.
+  \item \verb|bro_is_terminating(): bool|\\
+    Returns true if Bro is in the process of shutting down.
+  \item \verb|gethostname(): string|\\
+    Get the value of the hostname of the machine Bro runs on.
+  \item \verb|getpid(): count|\\
+    Returns Bro's process ID.
+  \item \verb|lookup_ID(id: string): any|\\
+    Returns the value of associated with the global identifier \verb|id|. If
+    \verb|id| does not describe a valid identifier, the function returns the
+    string \verb|"<unknown id>"| or \verb|"<no ID value>"|.
+  \item \verb|current_analyzer(): count|\\
+    Returns the ID of the analyzer which raised the current event, or 0 if no
+    analyzer has been instantiated.
+  \item \verb|analyzer_name(aid: count): string|\\
+    Translates the analyzer ID \verb|aid| to a string representation.
+  \item \begin{verbatim}
+expect_connection(orig: addr, resp: addr, resp_p: port,
+          				analyzer: count, tout: interval): bool
+    \end{verbatim}
+    Schedules an analyzer identified by the ID \verb|analyzer| for a future
+    connection from IP address \verb|orig| to \verb|resp| at port
+    \verb|resp_p|. The function ignores the scheduling request if the
+    connection did not occur within the time interval \verb|tout|.
+  \item \verb|disable_analyzer(id: conn_id, aid: count): bool|\\
+    Disables the analyzer \verb|aid| which raised the current event if it
+    belongs to connection identified by \verb|id|.
+  \item \verb|is_external_conenction(c: connection): bool|\\
+    Returns true if the connection \verb|c| has been received externally.
+    \todo{What does this mean?}
+  \item \verb|disable_print_hook(f: file)|\\
+    Function equivalent to the \verb|&disable_print_hook| attribute,
+    \todo{which does what?}
+  \item \verb|enable_raw_output(f: file)|\\
+    Function equivalent to the \verb|&raw_output| attribute, which prevents
+    escaping of non-ASCII characters when writing to \verb|f|.
+  \item \verb|enable_communication()|\\
+    Enables the communication system. By default, communication is off until
+    explicitly enabled and all other calls to communication-related BiF's will
+    be ignored until done so.
+  \item \verb|suspend_processing()|\\
+    Stop Bro's packet processing. \todo{When would that be called?}
+  \item \verb|continue_processing()|\\
+    Resume Bro's packet processing. \todo{When would that be called?}
+  \item \verb|suspend_state_updates()|\\
+    Stop propagating \verb|&synchronized| accesses.
+  \item \verb|resume_state_updates()|\\
+    Resume propagating \verb|&synchronized| accesses.
+  \item \verb|enable_event_group(group: string)|\\
+    Enables all event handlers in the group \verb|group|. This affects all
+    handlers that have been tagged with the attribute \verb|&group="group"|.
+  \item \verb|disable_event_group(group: string)|\\
+    Disables all event handlers in the group \verb|group|. This affects all
+    handlers that have been tagged with the attribute \verb|&group="group"|.
 \end{itemize}
 
 \subsubsection*{Independent State}
@@ -936,6 +1024,10 @@ split_n(s: string, re: pattern, incl_sep: bool,
     Converts \verb|s| into a pattern. If \verb|convert| is true, \verb|s| is
     first passed through the function \verb|convert_for_pattern| to escape
     special characters of patterns.
+    % TODO: Remove prefix if the function name has changed.
+  \item \verb|NFS3::mode2string(mode: count): string|\\
+    Convert UNIX file permissions given by \verb|mode| to a string
+    representation of the form \verb|rw[xsS]rw[xsS]rw[xtT]|. 
 \end{itemize}
 
 \subsubsection*{Network Type Processing}
@@ -1010,6 +1102,26 @@ split_n(s: string, re: pattern, incl_sep: bool,
 %  \item \verb|preserve_prefix(a: addr, width: count)|\\
 %  \item \verb|preserve_subnet(sn: subnet)|\\
 %  \item \verb|anonymize_addr(a: addr, cl: IPAddrAnonymizationClass): addr|\\
+  \item \verb|lookup_location(a: addr) : geo_location|\\
+    Performs a geo-lookup of the IP address \verb|a| returning city, region,
+    and country.
+    Needs \texttt{libgeoip}.
+  \item \verb|lookup_asn(a: addr): count|\\
+    Performs a AS number lookup of the IP address \verb|a|. 
+    Needs \texttt{libgeoip}.
+  \item
+\begin{verbatim}
+x509_verify(der_cert: string, cert_stack: vector of string,
+            root_certs: table[string] of string): count
+\end{verbatim}
+    Verifies the X.509 certificate in DER format given by \verb|der_cert|. The
+    argument \verb|cert_stack| specifies a certificate chain to validate
+    against, with index 0 typically being the root CA. Bro uses the Mozilla 
+    root CA list by default, but \verb|root_certs| extends that list with
+    additional root certificates.
+  \item \verb|x509_err2str(err_num: count): string|\\
+    Converts the X.509 certificate verification error code \verb|err_num| into
+    a string representation.
 \end{itemize}
 
 \subsubsection*{Files and Directories}
