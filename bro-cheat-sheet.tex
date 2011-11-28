@@ -418,6 +418,9 @@ first, default 0\\
     Returns meta data about a record instance \verb|r|, which includes the
     type name, whether the field is logged, its value (if it has one), and its
     default value (if specified).
+  \item \verb|is_local_interface(ip: addr): bool|\\
+    Returns true if the address \verb|ip| is a valid DNS entry for
+    \texttt{localhost}.
 \end{itemize}
 
 \subsubsection*{Independent State}
@@ -450,6 +453,68 @@ connect(ip: addr, p: port, our_class: string, retry: interval,
     \todo{what does \emph{\texttt{our\_class}} do?}
   \item \verb|disconnect(p: event_peer): bool|\\
     Disconnects the peer identified by \verb|p|.
+  \item \verb|request_remote_events(p: event_peer, handlers: pattern): bool|\\
+    Subscribes to all events from remote peer \verb|p| whose names match the
+    pattern \verb|handlers|.
+    %That is, the local Bro instance inserts all events received from \verb|p|
+    %into its own event queue and dispatches them when they are ready.
+  \item \verb|request_remote_sync(p: event_peer, auth: bool): bool|\\
+    Requests synchronization of IDs with remote peer \verb|p|. If \verb|auth|
+    is true, the local Bro instance considers its current state authoritative
+    and sends it to \verb|p| right after the handshake.
+  \item \verb|request_remote_logs(p: event_peer): bool|\\
+    Requests logs from remote peer \verb|p|. \todo{what does it do exactly?}
+    \ReturnsTrueOnSuccess
+  \item \verb|set_accept_state(p: event_peer, accept: bool): bool|\\
+    Sets a boolean flag whether Bro accept state from the remote peer \verb|p|.
+    \ReturnsTrueOnSuccess
+  \item \verb|set_compression_level(p: event_peer, level: count): bool|\\
+    Sets the compression level of the session with remote peer \verb|p|.
+    values for \verb|level| are in $[0,9]$, where 0 is the default and means no
+    compression)
+    \ReturnsTrueOnSuccess
+  \item \verb|listen(ip: addr, p: port, ssl: bool): bool|\\
+    Listens on address \verb|ip| and port \verb|p| for remote connections. If
+    \verb|ssl| is true, the Bro uses SSL to encrypt the session.
+    \ReturnsTrueOnSuccess
+  \item \verb|is_remote_event(): bool|\\
+    Returns true if the last raised event stemmed from a remote peer.
+  \item \verb|send_state(p: event_peer): bool|\\
+    Sends all persistent state to the remote peer \verb|p|.
+    \ReturnsTrueOnSuccess
+  \item \verb|send_id(p: event_peer, id: string): bool|\\
+    Send the value of the global identifier \verb|id| to the remote peer
+    \verb|p|, which might then install it locally.
+  \item \verb|terminate_communication(): bool|\\
+    Gracefully finishes communication by first making sure that all remaining
+    data from parent and child has been sent out.
+    Returns true if the termination process has been started successfully.
+  \item \verb|complete_handshake(p: event_peer): bool|\\
+    Signals the remote peer \verb|p| that the local Bro instance finished the
+    initial handshake.
+    \ReturnsTrueOnSuccess
+  \item \verb|send_ping(p: event_peer, seq: count): bool|\\
+    Sends a ping with a sequence number \verb|seq| to the remote peer \verb|p|.
+    \todo{what's the purpose of this event?}
+    \ReturnsTrueOnSuccess
+  \item \verb|send_current_packet(p: event_peer): bool|\\
+    Sends the currently processed packet to the remote peer \verb|p|.
+    \ReturnsTrueOnSuccess
+  \item \verb|do_profiling()|\\
+    Enable detailed collections of statistics about CPU/memory usage,
+    connections, TCP states/reassembler, DNS lookups, timers, and script-level
+    state. The script variable \verb|profiling_file| holds the name of the log
+    file.
+  \item \verb|get_event_peer(): event_peer|\\
+    Returns the peer who generated that last raised event.
+  \item \verb|get_local_event_peer(): event_peer|\\
+    Returns the local peer.
+  \item \verb|send_capture_filter(p: event_peer, s: string): bool|\\
+    Sends the capture filter \verb|s| to the remote peer \verb|p|.
+    \ReturnsTrueOnSuccess
+  \item \verb|make_connection_persistent(c: connection)|\\
+    Makes the connection \verb|c| persistent. \todo{What does it mean for a
+    connection to be persistent?}
 \end{itemize}
 
 \subsubsection*{Analyzer Behavior}
@@ -503,6 +568,15 @@ connect(ip: addr, p: port, our_class: string, retry: interval,
     otherwise.
   \item \verb|skip_smtp_data(c: connection)|\\
     Skips SMTP data until the next email in \texttt{c}.
+  \item \verb|dump_current_packet(file_name: string): bool|\\
+    Writes the current packet to the file identified by \verb|file_name|.
+    \ReturnsTrueOnSuccess
+  \item \verb|get_current_packet(): pcap_packet|\\
+    Returns the currently processed PCAP packet, which is a record containing a
+    timestamp, the ``snaplen,'' and the packet data.
+  \item \verb|dump_packet(pkt: pcap_packet, file_name: string): bool|\\
+    Writes the packet \verb|pkt| to the file identified by \verb|file_name|.
+    \ReturnsTrueOnSuccess
 \end{itemize}
 
 \subsubsection*{Generic Programming}
@@ -515,6 +589,28 @@ connect(ip: addr, p: port, our_class: string, retry: interval,
     Returns the number of elements in the container \texttt{v}.
   \item \verb|clear_table(v: any)|\\
     Removes all elements from the set or table \texttt{v}.
+  \item \verb|resize(v: any, newsize: count): count|.
+    Resizes the vector \verb|v| to the size \verb|newsize|.
+    Returns the old size of \verb|v| and 0 if \verb|v| is not a \verb|vector|
+    type.
+  \item \verb|any_set(v: any): bool|\\
+    Test whether the boolean vector (\verb|vector of bool|) has any true
+    element, i.e., returns the value of the expression
+    $\exists x \in \mathtt{v}: x = \mathtt{T}$.
+  \item \verb|all_set(v: any): bool|\\
+    Test whether all elements of the boolean vector (\verb|vector of bool|) are
+    true, i.e., returns the value of the expression
+    $\forall x \in \mathtt{v}: x = \mathtt{T}$. Missing elements count as
+    false.
+  \item \verb|sort(v: any, ...): any|
+    Sorts the vector \verb|v| in place and returns the original vector. 
+    The second argument is a comparison function that takes two arguments: if
+    the type of \verb|v| is \verb|vector of T|, then the comparison function is
+    \verb|function(a: T, b: T): bool| that returns \verb|a < b| for some
+    type-specific notion of the less-than operator.
+  \item \verb|order(v: any, ...): vector of count|
+    Returns the order of the elements in the vector \verb|v| according to some
+    comparison function. See \verb|sort|.
 \end{itemize}
 
 \subsubsection*{String Processing}
@@ -622,16 +718,16 @@ split_n(s: string, re: pattern, incl_sep: bool,
     Takes a string and escapes characters that would allow execution of
     commands at the shell level. Must be used before including strings in
     \verb|system| or similar calls.
-  \item \verb|find_all(s: string, re: pattern) : set of string|\\
+  \item \verb|find_all(s: string, re: pattern): set of string|\\
     Returns all occurrences of \texttt{re} in \texttt{s} (or an empty empty set
     if none).
-  \item \verb|find_last(s: string, re: pattern) : string|\\
+  \item \verb|find_last(s: string, re: pattern): string|\\
     Returns the last occurrence of \texttt{re} in \texttt{s}. If not found,
     returns an empty string.  Note that this function returns the match that
     starts at the largest index in the string, which is not necessarily the
     longest match.  For example, a pattern of \texttt{/.*/} will return the
     final character in the string.
-  \item \verb|hexdump(data: string) : string|\\
+  \item \verb|hexdump(data: string): string|\\
     Returns a hex dump for \texttt{data}. The hex dump renders 16 bytes per
     line, with hex on the left and ASCII (where printable) on the right. Based
     on Netdude's hex editor code.
