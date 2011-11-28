@@ -298,7 +298,8 @@ first, default 0\\
     exit status of the command itself. A value of 127 corresponds to a failure
     to execute \verb|sh|, and -1 to an internal system failure. Furthermore,
     the command is run in the background with \verb|stdout| redirected to
-    \verb|stderr|.
+    \verb|stderr|. Here is a usage example:
+    \verb|system(fmt("rm \"%s\"", str_shell_escape(sniffed_data)));|
   \item \verb|system_env(s: string, env: any): int|\\
     Same as \verb|system|, but prepare the environment before invoking the
     command \verb|s| with the set/table \verb|env|.
