@@ -76,7 +76,7 @@ Download: & \url{https://github.com/broids/cheat-sheet}
 
 Lowercase letters represent instance variables and uppercase letters represent
 types. In general, \texttt{x} is an instance of type \texttt{T} and \texttt{y}
-an instance of type \texttt{U}. Argument names and record fields begin begin
+an instance of type \texttt{U}. Argument names and record fields begin
 with \texttt{a}, \texttt{b},~\ldots, and \texttt{z} represents a default
 instance variable which takes on the type of the right-hand side expression.
 For notational convenience, \texttt{x} can often be replaced with an expression
@@ -1102,9 +1102,8 @@ split_n(s: string, re: pattern, incl_sep: bool,
 %  \item \verb|preserve_subnet(sn: subnet)|\\
 %  \item \verb|anonymize_addr(a: addr, cl: IPAddrAnonymizationClass): addr|\\
   \item \verb|lookup_location(a: addr) : geo_location|\\
-    Performs a geo-lookup of the IP address \verb|a| returning city, region,
-    and country.
-    Needs \texttt{libgeoip}.
+    Performs a geo-lookup of the IP address \verb|a|. Returns city, region, and
+    country. Needs \texttt{libgeoip}.
   \item \verb|lookup_asn(a: addr): count|\\
     Performs a AS number lookup of the IP address \verb|a|. 
     Needs \texttt{libgeoip}.
