@@ -731,6 +731,49 @@ split_n(s: string, re: pattern, incl_sep: bool,
     Returns a hex dump for \texttt{data}. The hex dump renders 16 bytes per
     line, with hex on the left and ASCII (where printable) on the right. Based
     on Netdude's hex editor code.
+  \item \verb|find_entropy(data: string): entropy_test_result|\\
+    Performs an \href{http://www.fourmilab.ch/random/}{entropy}
+    test on \verb|data|. The result is a record with the following fields:
+    \begin{itemize}
+      \item \verb|entropy|: The information density expressed as a number of
+        bits per character.
+      \item \verb|chi_square|: The $\chi^2$ test value expressed as an absolute
+        number and a percentage which indicates how frequently a truly random
+        sequence would exceed the value calculated, i.e., the degree to which
+        the sequence tested is suspected of being non-random.
+      \item \verb|mean|: The arithmetic mean of all the bytes. If the data are
+        close to random, it should be around 127.5.
+        If the percentage is greater than 99\% or less than 1\%, the sequence
+        is almost certainly not random. If the percentage is between 99\% and
+        95\% or between 1\% and 5\%, the sequence is suspect. Percentages
+        between 90\% and 95\% and 5\% and 10\% indicate the sequence is
+        ``almost suspect''.
+      \item \verb|monte_carlo_pi|: Each successive sequence of six bytes is
+        used as 24-bit $x$ and $y$ co-ordinates within a square. If the
+        distance of the randomly-generated point is less than the radius of a
+        circle inscribed within the square, the six-byte sequence is considered
+        a ``hit.'' The percentage of hits can be used to calculate the value of
+        $\pi$. For very large streams the value will approach the correct value
+        of $\pi$ if the sequence is close to random. 
+      \item \verb|serial_correlation|: This quantity measures the extent to
+        which each byte in the file depends upon the previous byte. For random
+        sequences this value will be close to zero. Also known as
+        \emph{autocorrelation}.
+    \end{itemize}
+  \item \verb|entropy_test_init(index: any): bool|\\
+    Initializes data structures for incremental entropy calculation. The
+    \verb|index| argument is an arbitrary unique value per distinct
+    computation.
+    \ReturnsTrueOnSuccess
+    See \verb|entropy_test_add| and \verb|entropy_test_finish|.
+  \item \verb|entropy_test_add(index: any, data: string): bool|\\
+    Add \verb|data| to the incremental entropy calculation identified by
+    \verb|index|.
+    \ReturnsTrueOnSuccess
+  \item \verb|entropy_test_finish(index: any): entropy_test_result|\\
+    Finalizes the incremental entropy calculation identified by \verb|index|.
+    When all data has been added, this function returns the result record which
+    is described above in \verb|find_entropy|.
 \end{itemize}
 
 \subsubsection*{Math}
