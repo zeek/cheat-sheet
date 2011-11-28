@@ -279,17 +279,6 @@ first, default 0\\
     empty string if it is not defined.
   \item \verb|setenv(var: string, val: string): bool|\\
     Sets the system environment variable \verb|var| to \verb|val|.
-  \item \verb|exit()|
-    % TODO: Update this function signature to
-    %
-    %   exit(code: int)
-    %
-    % when the branch topic/bif_cleanup is merged into master.
-    Shuts down the Bro process immediately.
-  \item \verb|terminate(): bool|
-    Gracefully shut down Bro by terminating outstanding processing. Returns
-    true after successful termination and false when Bro is still in the
-    process of shutting down.
   \item \verb|syslog(s: string)|\\
     Send the string \verb|s| to syslog.
   \item \verb|system(s: string): int|\\
@@ -331,7 +320,7 @@ first, default 0\\
   \item \verb|md5_hmac(...): string|\\
     Computes an HMAC-MD5 hash value of the provided list of arguments. The HMAC
     secret key is generated from available entropy when Bro starts up, or it
-    can be specified for repeatability using the new \texttt{-K} flag.
+    can be specified for repeatability using the \texttt{-K} flag.
   \item \verb|file_size(f: string): double|\\
     Returns the file size in bytes of the file identified by \verb|f|.
   \item \verb|strftime(fmt: string, d: time): string|\\
@@ -356,6 +345,17 @@ first, default 0\\
   \item \verb|unique_id_from(pool: int, prefix: string): string|\\
     Same as \verb|unique_id|, except that the additional argument \verb|pool|
     specifies a seed for determinism.
+  \item \verb|terminate(): bool|
+    Gracefully shut down Bro by terminating outstanding processing. Returns
+    true after successful termination and false when Bro is still in the
+    process of shutting down.
+  \item \verb|exit()|
+    % TODO: Update this function signature to
+    %
+    %   exit(code: int)
+    %
+    % when the branch topic/bif_cleanup is merged into master.
+    Shuts down the Bro process immediately.
 \end{itemize}
 
 \subsubsection*{Packet Filtering}
@@ -583,8 +583,8 @@ connect(ip: addr, p: port, our_class: string, retry: interval,
     \ReturnsTrueOnSuccess
   \item \verb|send_ping(p: event_peer, seq: count): bool|\\
     Sends a ping with a sequence number \verb|seq| to the remote peer \verb|p|.
-    \todo{what's the purpose of this event?}
     \ReturnsTrueOnSuccess
+    \todo{what's the purpose of this function? Measuring latency?}
   \item \verb|send_current_packet(p: event_peer): bool|\\
     Sends the currently processed packet to the remote peer \verb|p|.
     \ReturnsTrueOnSuccess
@@ -1117,7 +1117,7 @@ x509_verify(der_cert: string, cert_stack: vector of string,
     Verifies the X.509 certificate in DER format given by \verb|der_cert|. The
     argument \verb|cert_stack| specifies a certificate chain to validate
     against, with index 0 typically being the root CA. Bro uses the Mozilla 
-    root CA list by default, but \verb|root_certs| extends that list with
+    root CA list by default; \verb|root_certs| extends that list with
     additional root certificates.
   \item \verb|x509_err2str(err_num: count): string|\\
     Converts the X.509 certificate verification error code \verb|err_num| into
