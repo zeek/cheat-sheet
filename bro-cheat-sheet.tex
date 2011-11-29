@@ -781,7 +781,26 @@ split_n(s: string, re: pattern, incl_sep: bool,
 %\end{verbatim}
 %    Same as \verb|split_n|, except that the extra parameter \texttt{other} is
 %    not used.
-  \item \verb|join_string_array(): string|\\\
+  \item \verb|string_cat(...): string|\\
+    Concatenes a variable number of string arguments into a single string.
+  \item \verb|cat_string_array(a: table[count] of string): string|\\
+    Same as \verb|string_cat|, except that it takes an array of strings as
+    argument and concatenates its values into a single string.
+  \item
+\begin{verbatim}
+cat_string_array_n(a: table[count] of string,
+                   start: count, end: count): string
+\end{verbatim}
+    Same as \verb|cat_string_array|, but only concatenates the strings from
+    index \verb|start| to \verb|end|.
+  \item
+\begin{verbatim}
+join_string_array(sep: string, a: table[count] of string): string
+\end{verbatim}
+    Concatenates all elements in \verb|a| into a single string,
+    with \verb|sep| placed between each element.
+  \item \verb|sort_string_array(a: table[count] of string): string|\\
+    Sorts the string array \verb|a| and returns a sorted copy.
   \item \verb|sub(s: string, re: pattern, repl: string): string|\\
     Substitutes \texttt{repl} for the first occurrence of \texttt{re} in
     \texttt{s}.
@@ -806,7 +825,7 @@ split_n(s: string, re: pattern, incl_sep: bool,
     Returns a copy of \verb|s| with the uppercase letters (as indicated by
     \verb|isascii| and \verb|isupper|) folded to lowercase (via
     \verb|tolower|).
-  \item \verb|function edit(arg_s: string, arg_edit_char: string): string|\\
+  \item \verb|edit(arg_s: string, arg_edit_char: string): string|\\
     Returns a version of s assuming that \verb|edit_char| is the ``backspace
     character'' (usually \verb|\x08| for backspace or \verb|\x7f| for DEL). For
     example, \verb|edit("hello there", "e")| returns \verb|"llo t"|. The
