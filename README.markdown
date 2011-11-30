@@ -7,20 +7,22 @@ describes the built-in functions (BiFs).
 
 Tweaking
 --------
-It turns that Bro provides more features than we could fit on single
-double-sided sheet. Particularly the documentation of all BiFs is very space
-consuming. We already selected a subset of functions that we deem relevant to
-the majority of users, but there exist folks that may want a "desktop
-reference" rather than a succinct cheat sheet. If you prefer to have *all* BiFs
-included on the cheat sheet, download the LaTeX source and uncomment the line
+It turns out that Bro provides more features than we could fit on single
+double-sided sheet. Particularly the documentation of all BiFs consumes a lot
+of space, although we only selected a subset of functions that we deem relevant
+for the majority of users. Still, there exist folks who may want a complete
+"desktop reference" rather than a succinct cheat sheet. If you prefer to have
+*all* BiFs included on the cheat sheet, download the LaTeX source and uncomment
+the line
 
     %\verbosetrue
 
-at the beginning of the file. Then use the LaTeX compiler of your choice (e.g.,
+at the beginning of the file. Then use your favorite LaTeX compiler (e.g.,
 `pdflatex`) to build the verbose version of the cheat sheet with additional,
 more low-level BiFs. However, we emphasize that you will *not* need these extra
-BiFs in 99% of the cases, because they are either extremely rarely used or
-already wrapped behind more accessible interfaces in the base scripts.
+BiFs in 99% of your scripting experience, because they are either extremely
+rarely used or already wrapped behind more accessible interfaces in the base
+scripts.
 
 License
 -------
