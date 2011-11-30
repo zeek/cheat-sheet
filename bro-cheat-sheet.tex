@@ -110,27 +110,26 @@ License: & \href{http://creativecommons.org/licenses/by-nc-sa/3.0/}
 \section*{Language}
 
 Lowercase letters represent instance variables and uppercase letters represent
-types. In general, \texttt{x} is an instance of type \texttt{T} and \texttt{y}
-an instance of type \texttt{U}. Argument names and record fields begin
-with \texttt{a}, \texttt{b},~\ldots, and \texttt{z} represents a default
-instance variable which takes on the type of the right-hand side expression.
-For notational convenience, \texttt{x} can often be replaced with an expression
-of type \texttt{T}.
-%Parenthesis after a type, e.g., \texttt{T()}, denote constructor invocation.
+types. In general, \texttt{x} is an instance of type \texttt{\textit{T}} and
+\texttt{y} an instance of type \texttt{\textit{U}}. Argument names and record
+fields begin with \texttt{a}, \texttt{b},~\ldots, and \texttt{z} represents a
+default instance variable which takes on the type of the right-hand side
+expression. For notational convenience, \texttt{x} can often be replaced with
+an expression of type \texttt{\textit{T}}.
 
 \subsection*{Variables}
 
 Constant qualifier \dotfill \texttt{const}\\
 Constant redefinition \dotfill \texttt{redef x \textit{op} \textit{expr}}\\
 Scope qualifier \dotfill \texttt{local}, \texttt{global}\\
-Declaration \dotfill \texttt{\textit{scope} x:~T}\\
+Declaration \dotfill \texttt{\textit{scope} x:~\textit{T}}\\
 Declaration \& Definition \dotfill \texttt{\textit{scope} z = \textit{expr}}
 
 \subsection*{Declarations}
 
-Type \dotfill \texttt{type~\textit{name}:~T}\\
-Function \dotfill \verb|function f(a: T, ...): R|\\
-Event \dotfill \verb|event e(a: T, ...)|
+Type \dotfill \texttt{type~\textit{name}:~\textit{T}}\\
+Function \dotfill \texttt{function~f(a:~\textit{T},~...):~\textit{R}}\\
+Event \dotfill \texttt{event~e(a:~\textit{T},~...)}
 
 \subsection*{Modules}
 
@@ -145,7 +144,7 @@ Basic statement \dotfill
   \texttt{\textit{stmt};} or \texttt{\textit{expr};}\\
 Code block \dotfill \texttt{\{ \textit{stmt}; ... \}}\\
 Assignment \dotfill \texttt{z = \textit{expr}}\\
-Function assignment \dotfill \texttt{z~=~function(...):~R~\{..\}}\\
+Function assignment \dotfill \texttt{z~=~function(...):~\textit{R}~\{..\}}\\
 Event queuing \dotfill \verb|event e(...)|\\
 Event scheduling \dotfill \verb|schedule 10 secs { e(...) }|\\
 Print expression to \texttt{stdout} \dotfill \texttt{print \textit{expr}}\\
@@ -226,7 +225,7 @@ Declaration \dotfill \verb|enum { FOO, BAR }|\\
 Assignment \dotfill \texttt{\textit{scope}} \verb|x = FOO|\\
 
 \minisec{Records}
-Declaration \dotfill \verb|record { a: T, b: U, ... }|\\
+Declaration \dotfill \texttt{record~\{~a:~\textit{T},~b:~\textit{U},~... \}}\\
 Constructor \dotfill \verb|record($a=x, $b=y, ...)|\\
 Assignment \dotfill \texttt{\textit{scope}} \verb|r = [$a=x, $b=y, ...]|\\
 Access \dotfill \verb|z = r$a|\\
@@ -234,7 +233,7 @@ Field assignment \dotfill \verb|r$b = y|\\
 Deletion \dotfill \verb|delete r$a|\\
 
 \minisec{Sets}
-Declaration \dotfill \verb|set[T]|\\
+Declaration \dotfill \texttt{set[\textit{T}]}\\
 Constructor \dotfill \verb|set(x, ...)|\\
 Assignment \dotfill \texttt{\textit{scope}} \verb|s = { x, ... }|\\
 Access \dotfill \verb|z = s[x]|\\
@@ -242,7 +241,7 @@ Insertion \dotfill \verb|add s[x]|\\
 Deletion \dotfill \verb|delete s[x]|\\
 
 \minisec{Tables}
-Declaration \dotfill \verb|table[T] of U|\\
+Declaration \dotfill \texttt{table[\textit{T}]~of~\textit{U}}\\
 Constructor \dotfill \verb|table([x] = y, ...)|\\
 Assignment \dotfill \texttt{\textit{scope}} \verb|t = { [x] = y, ... }|\\
 Access \dotfill \verb|z = t[x]|\\
@@ -250,7 +249,7 @@ Insertion \dotfill \verb|t[x] = y|\\
 Deletion \dotfill \verb|delete t[x]|\\
 
 \minisec{Vectors}
-Declaration \dotfill \verb|vector of T|\\
+Declaration \dotfill \texttt{vector~of~\textit{T}}\\
 Constructor \dotfill \verb|vector(x, ...)|\\
 Assignment \dotfill \texttt{\textit{scope}} \verb|v = { x, ... }|\\
 Access \dotfill \verb|z = v[0]|\\
