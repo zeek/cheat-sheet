@@ -750,10 +750,10 @@ expect_connection(orig: addr, resp: addr, resp_p: port,
     the function isn't called \verb|strlen|; to remind the user that Bro
     strings can include NULs).
   \item \verb|sub_bytes(s: string, start: count, n: int): string|\\
-    Get a substring of \texttt{s}, starting at position \texttt{start} and
+    Extracts a substring of \texttt{s}, starting at position \texttt{start} and
     having length \texttt{n}.
   \item \verb|split(s: string, re: pattern): table[count] of string|\\
-    Split \texttt{s} into an array using \texttt{re} to separate the elements.
+    Splits \texttt{s} into an array using \texttt{re} to separate the elements.
     The returned table starts at index 1. Note that conceptually the return
     value is meant to be a vector and this might change in the future.
   \item \verb|split1(s: string, re: pattern): table[count] of string|\\
@@ -773,14 +773,10 @@ split_n(s: string, re: pattern, incl_sep: bool,
     Similar to \verb|split1| and \verb|split_all|, but \verb|incl_sep|
     indicates whether to include matching separators and \verb|max_num_sep| the
     number of times to split \texttt{s}.
-%  \item
-%\begin{verbatim}
-%function split_complete(s string, re: pattern,
-%                        other: set[string], incl_sep: bool,
-%                        max_num_sep: count): table[count] of string
-%\end{verbatim}
-%    Same as \verb|split_n|, except that the extra parameter \texttt{other} is
-%    not used.
+  \item \verb|str_split(s: string, idx: vector of count): vector of string|\\
+    Splits \texttt{s} into substrings, taking all the indices in
+    \texttt{idx} as cutting points; \texttt{idx} does not need to be sorted and
+    out-of-bounds indices are ignored.
   \item \verb|string_cat(...): string|\\
     Concatenes a variable number of string arguments into a single string.
   \item \verb|cat_string_array(a: table[count] of string): string|\\
@@ -799,64 +795,64 @@ join_string_array(sep: string, a: table[count] of string): string
 \end{verbatim}
     Concatenates all elements in \verb|a| into a single string,
     with \verb|sep| placed between each element.
+  \item \verb|join_string_vec(v: vector of string, sep: string): string|\\
+    Concatenates all elements in \verb|v| into a single string,
+    with \verb|sep| placed between each element.
   \item \verb|sort_string_array(a: table[count] of string): string|\\
     Sorts the string array \verb|a| and returns a sorted copy.
   \item \verb|sub(s: string, re: pattern, repl: string): string|\\
     Substitutes \texttt{repl} for the first occurrence of \texttt{re} in
     \texttt{s}.
   \item \verb|gsub(s: string, re: pattern, repl: string): string|\\
-    Same as \texttt{sub} except that all occurrences of \texttt{re} are
+    Same as \texttt{sub} except that \emph{all} occurrences of \texttt{re} are
     replaced.
   \item \verb|strcmp(s1: string, s2: string): int|
-    Lexicographically compare \texttt{s1} and \texttt{s2}. Returns an integer
+    Lexicographically compares \texttt{s1} and \texttt{s2}. Returns an integer
     greater than, equal to, or less than 0 according as \texttt{s1} is greater
     than, equal to, or less than \texttt{s2}.
   \item \verb|strstr(big: string, little: string): count|\\
-    Locate the first occurrence of \texttt{little} in \texttt{big}.
+    Locates the first occurrence of \texttt{little} in \texttt{big}.
     Returns 0 if \texttt{little} is not found in \texttt{big}.
   \item \verb|subst_string(s: string, from: string, to: string): string|\\
-    Substitute each (non-overlapping) appearance of \texttt{from} in
+    Substitutes each (non-overlapping) appearance of \texttt{from} in
     \texttt{s} to \texttt{to}, and return the resulting string.
   \item \verb|to_lower(s: string): string|\\
-    Returns a copy of the given string with the lowercase letters (as indicated
-    by \verb|isascii| and \verb|islower|) folded to uppercase (via
-    \verb|toupper|).
-  \item \verb|to_upper(s: string): string|\\
-    Returns a copy of \verb|s| with the uppercase letters (as indicated by
-    \verb|isascii| and \verb|isupper|) folded to lowercase (via
+    Returns a copy of the given string with the uppercase letters (as indicated
+    by \verb|isascii| and \verb|isupper|) folded to lowercase (via
     \verb|tolower|).
-  \item \verb|edit(arg_s: string, arg_edit_char: string): string|\\
-    Returns a version of s assuming that \verb|edit_char| is the ``backspace
-    character'' (usually \verb|\x08| for backspace or \verb|\x7f| for DEL). For
-    example, \verb|edit("hello there", "e")| returns \verb|"llo t"|. The
-    argument \verb|edit_char| must be a string of exactly one character, or Bro
-    generates a run-time error and uses the first character in the string.
+  \item \verb|to_upper(s: string): string|\\
+    Returns a copy of \verb|s| with the lowercase letters (as indicated by
+    \verb|isascii| and \verb|islower|) folded to lowercase (via
+    \verb|toupper|).
+  \item \verb|is_ascii(s: string): bool|\\
+    Returns false if any byte value of \texttt{s} is greater than 127, and true
+    otherwise.
+  \item \verb|edit(s: string, edit_char: string): string|\\
+    Returns a version of \verb|s| assuming that \verb|edit_char| is the
+    ``backspace character'' (usually \verb|\x08| for backspace or \verb|\x7f|
+    for DEL). For example, \verb|edit("hello there", "e")| returns
+    \verb|"llo t"|. The argument \verb|edit_char| must be a string of exactly
+    one character, or Bro generates a run-time error and uses the first
+    character in the string.
   \item \verb|clean(s: string): string|\\
-    Replace non-printable characters in \texttt{s} with escaped sequences,
+    Replaces non-printable characters in \texttt{s} with escaped sequences,
     with the mappings
     \verb|NUL| $\rightarrow$ \verb|\0|,
     \verb|DEL| $\rightarrow$ \verb|^?|,
     values $\le 26$ $\rightarrow$ \verb|^[A-Z]|,
     and values not in $[32, 126]$~$\rightarrow$~\verb|%XX|. If the string does
-    yet have a trailing NUL, one is added.
+    not yet have a trailing NUL, one is added.
   \item \verb|to_string_literal(s: string): string|\\
     Same as clean, but with different mappings:
     values not in $[32, 126]$~$\rightarrow$~\verb|%XX|,
     \verb|\|~$\rightarrow$~\verb|\\|,
     \verb|'|~$\rightarrow$~\verb|\'|,
     \verb|"|~$\rightarrow$~\verb|\"|.
-  \item \verb|is_ascii(s: string): bool|\\
-    Returns false if any byte value of \texttt{s} is greater than 127, and true
-    otherwise.
   \item \verb|escape_string(s: string): string|\\
     Returns a printable version of \texttt{s}. Same as \texttt{clean} except
     that non-printable characters are removed.
   \item \verb|string_to_ascii_hex(s: string): string|\\
     Returns an ASCII hexadecimal representation of a string.
-  \item \verb|str_split(s: string, idx: vector of count): vector of string|\\
-    Splits \texttt{s} into substrings, taking all the indices in
-    \texttt{idx} as cutting points; \texttt{idx} does not need to be sorted and
-    out-of-bounds indices are ignored.
   \item \verb|strip(s: string): string|\\
     Strips whitespace at both ends of \texttt{s}.
   \item \verb|string_fill(len: int, source: string): string|\\
