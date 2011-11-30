@@ -12,6 +12,7 @@
 \usepackage[landscape,margin=13mm,footskip=1pt,includefoot]{geometry}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage[utf8]{inputenc}
 \usepackage{multicol}
 \usepackage{setspace}
 %\usepackage[compact]{titlesec}
@@ -303,21 +304,26 @@ first, default 0\\
 \subsubsection*{Core}
 
 \begin{itemize}
+\verbose{
   \item \verb|getenv(var: string): string|\\
     Returns the system environment variable identified by \verb|var|, or an
     empty string if it is not defined.
   \item \verb|setenv(var: string, val: string): bool|\\
     Sets the system environment variable \verb|var| to \verb|val|.
+}
   \item \verb|syslog(s: string)|\\
     Send the string \verb|s| to syslog.
   \item \verb|system(s: string): int|\\
     Invokes a command via the \texttt{system} function.
     Returns true if the return value of \texttt{system} was non-zero.
-    Returns the return value from the \texttt{system()} call. Note that this
-    corresponds to the status of backgrounding the given command, not to the
-    exit status of the command itself. A value of 127 corresponds to a failure
-    to execute \verb|sh|, and -1 to an internal system failure. Furthermore,
-    the command is run in the background with \verb|stdout| redirected to
+    Returns the return value from the \texttt{system()} call.
+\verbose{
+    Note that this corresponds to the status of backgrounding the given
+    command, not to the exit status of the command itself. A value of 127
+    corresponds to a failure to execute \verb|sh|, and -1 to an internal system
+    failure. 
+}
+    The command is run in the background, \verb|stdout| redirects to
     \verb|stderr|. Here is a usage example:
     \verb|system(fmt("rm \"%s\"", str_shell_escape(sniffed_data)));|
 \verbose{
@@ -342,7 +348,7 @@ first, default 0\\
     \verb|md5_hash_init(c$id)| once before invoking
     \verb|md5_hash_update(c$id, some_more_data)| in the \verb|http_entity_data|
     event handler.
-  \item \verb|function md5_hash_update(index: any, data: string): bool|\\
+  \item \verb|md5_hash_update(index: any, data: string): bool|\\
     Update the MD5 value associated with \verb|index|. Note that it is
     necessary to call \verb|md5_hash_init(index)| once before calling this
     function to initialize the MD5 state.
@@ -438,11 +444,6 @@ first, default 0\\
     Returns the Bro version string.
   \item \verb|getpid(): count|\\
     Returns Bro's process ID.
-  \item \verb|do_profiling()|\\
-    Enable detailed collections of statistics about CPU/memory usage,
-    connections, TCP states/reassembler, DNS lookups, timers, and script-level
-    state. The script variable \verb|profiling_file| holds the name of the log
-    file.
   \item \verb|gethostname(): string|\\
     Get the value of the hostname of the machine Bro runs on.
   \item \verb|current_time(): time|\\
@@ -450,11 +451,18 @@ first, default 0\\
   \item \verb|network_time(): time|\\
     Returns the timestamp of the last packet processed.
     Returns the timestamp of the most recently read packet, whether read from a
-    live network interface or from a save file. Compare against
-    \verb|current_time|. In general, you should use \verb|network_time| unless
-    you're using Bro for non-networking uses (such as general scripting; not
-    particularly recommended), because otherwise your script may behave very
-    differently on live traffic versus played-back traffic from a save file.
+    live network interface or from a save file. 
+\verbose{
+    In general, you should use \verb|network_time| instead of
+    \verb|current_time| unless you're using Bro for non-networking uses (such
+    as general scripting; not particularly recommended), because otherwise your
+    script may behave very differently on live traffic versus played-back
+    traffic from a save file.
+  \item \verb|do_profiling()|\\
+    Enable detailed collections of statistics about CPU/memory usage,
+    connections, TCP states/reassembler, DNS lookups, timers, and script-level
+    state. The script variable \verb|profiling_file| holds the name of the log
+    file.
   \item \verb|net_stats(): NetStats|\\
     Returns statistics about the number of packets
     \first received by Bro,
@@ -475,7 +483,6 @@ first, default 0\\
     \ReturnsTrueOnSuccess
   \item \verb|get_gap_summary(): gap_info|\\
     Returns statistics about TCP gaps.
-\verbose{
   \item \verb|type_name(t: any): string|\\
     Returns the type name of \texttt{t}.
   \item \verb|record_type_to_vector(rt: string): vector of string|\\
@@ -688,12 +695,18 @@ expect_connection(orig: addr, resp: addr, resp_p: port,
     Informs Bro that it should skip any further processing of the contents of
     the connection identified by \verb|id|. In particular, Bro will refrain
     from reassembling the TCP byte stream and from generating events relating
-    to any analyzers that have been processing the connection. Bro will still
-    generate connection-oriented events such as \verb|connection_finished|.
+    to any analyzers that have been processing the connection.
+\verbose{
+    Bro will still generate connection-oriented events such as
+    \verb|connection_finished|.
+}
     Returns false if \verb|id| does not point to an active connection and
-    true otherwise. Note that this does not in itself imply that packets from
+    true otherwise.
+\verbose{
+    Note that this does not in itself imply that packets from
     this connection will not be recorded, which is controlled separately by
     \verb|set_record_packets|.
+}
   \item \verb|set_record_packets(id: conn_id, do_record: bool): bool|\\
     Controls whether packet contents belonging to the connection identified by
     \verb|id| should be recorded (when \texttt{-w \textit{out.pcap}} is
@@ -704,8 +717,10 @@ expect_connection(orig: addr, resp: addr, resp_p: port,
   \item \verb|set_contents_file(id: conn_id, direction: count, f: file): bool|\\
     Associates the file handle \verb|f| with the connection identified by
     \verb|id| for writing TCP byte stream contents. The argument
-    \verb|direction| controls what sides of the connection contents are
-    recorded; it can take on four values:
+    \verb|direction| can take one the four values
+    \verb|CONTENTS_{NONE,ORIG,RESP,BOTH}| and controls what sides of the
+    connection contents are recorded.
+\verbose{
     \begin{itemize}
       \item \verb|CONTENTS_NONE|: Stop recording the connection's content.
       \item \verb|CONTENTS_ORIG|: Record the data sent by the connection
@@ -716,11 +731,15 @@ expect_connection(orig: addr, resp: addr, resp_p: port,
         Results in the two directions being intermixed in the file, in the
         order the data was seen by Bro.
     \end{itemize}
+}
     Returns false if \verb|id| does not point to an active connection and
-    true otherwise. Note that the data recorded to the file reflects the byte
+    true otherwise.
+\verbose{
+    Note that the data recorded to the file reflects the byte
     stream, not the contents of individual packets. Reordering and duplicates
     are removed. If any data is missing, the recording stops at the missing
     data; this can happen, e.g., due to an \verb|ack_above_hole| event.
+}
   \item \verb|get_contents_file(id: conn_id, direction: count): file|\\
     Returns the file handle associated with the connection identified by
     \texttt{id} and \texttt{direction}. If the connection exists but no
@@ -735,6 +754,7 @@ expect_connection(orig: addr, resp: addr, resp_p: port,
   \item \verb|dump_current_packet(file_name: string): bool|\\
     Writes the current packet to the file identified by \verb|file_name|.
     \ReturnsTrueOnSuccess
+\verbose{
   \item \verb|get_current_packet(): pcap_packet|\\
     Returns the currently processed PCAP packet, which is a record containing a
     timestamp, the ``snaplen,'' and the packet data.
@@ -745,6 +765,7 @@ expect_connection(orig: addr, resp: addr, resp_p: port,
     Sets an individual inactivity timeout for the connection identified by
     \texttt{id} (overrides the global inactivity timeout).
     Returns the previous timeout interval.
+}
 \end{itemize}
 
 \subsubsection*{Files and Directories}
@@ -788,11 +809,11 @@ expect_connection(orig: addr, resp: addr, resp_p: port,
   \item \verb|same_object(o1: any, o2: any): bool|\\
     Checks whether \texttt{o1} and \texttt{o2} reference the same internal
     object.
+  \item \verb|val_size(v: any): count|\\
+    Returns the number bytes that \verb|v| occupies in memory.
 }
   \item \verb|length(v: any): count|\\
     Returns the number of elements in the container \texttt{v}.
-  \item \verb|val_size(v: any): count|\\
-    Returns the number bytes that \verb|v| occupies in memory.
   \item \verb|clear_table(v: any)|\\
     Removes all elements from the set or table \texttt{v}.
   \item \verb|resize(v: any, newsize: count): count|.
@@ -971,7 +992,9 @@ join_string_array(sep: string, a: table[count] of string): string
     on Netdude's hex editor code.
   \item \verb|find_entropy(data: string): entropy_test_result|\\
     Performs an \href{http://www.fourmilab.ch/random/}{entropy}
-    test on \verb|data|. The result is a record with the following fields:
+    test on \verb|data|.
+\verbose{
+    The result is a record with the following fields:
     \begin{itemize}
       \item \verb|entropy|: The information density expressed as a number of
         bits per character.
@@ -995,9 +1018,9 @@ join_string_array(sep: string, a: table[count] of string): string
         of $\pi$ if the sequence is close to random. 
       \item \verb|serial_correlation|: This quantity measures the extent to
         which each byte in the file depends upon the previous byte. For random
-        sequences this value will be close to zero. Also known as
-        \emph{autocorrelation}.
+        sequences this value will be close to zero.
     \end{itemize}
+}
   \item \verb|entropy_test_init(index: any): bool|\\
     Initializes data structures for incremental entropy calculation. The
     \verb|index| argument is an arbitrary unique value per distinct
@@ -1095,13 +1118,14 @@ x509_verify(der_cert: string, cert_stack: vector of string,
     If any of the variable arguments is an empty string it is replaced by
     \texttt{default} instead.
   \item \verb|fmt(...): string|\\
-    Produces a formatted string. The first argument is the \emph{format string}
-    and specifies how subsequent arguments are converted for output. It is
-    composed of zero or more directives: ordinary characters (not \verb|%|),
-    which are copied unchanged to the output, and conversion specifications,
-    each of which fetches zero or more subsequent arguments. Conversion
-    specifications begin with \verb|%| and the arguments must properly
-    correspond to the specifier.
+    Produces a formatted string à la \verb|printf|. 
+\verbose{
+    The first argument is the \emph{format string} and specifies how subsequent
+    arguments are converted for output. It is composed of zero or more
+    directives: ordinary characters (not \verb|%|), which are copied unchanged
+    to the output, and conversion specifications, each of which fetches zero or
+    more subsequent arguments. Conversion specifications begin with \verb|%|
+    and the arguments must properly correspond to the specifier.
     After the \verb|%|, the following characters may appear in sequence:
     \begin{tabular}{l l}
       \verb|%| & Literal \verb|%|\\
@@ -1123,6 +1147,7 @@ x509_verify(der_cert: string, cert_stack: vector of string,
           \end{tabular}
         \end{minipage}\\
     \end{tabular}
+}
     Given no arguments, \verb|fmt| returns an empty string. Given a non-string
     first argument, \verb|fmt| returns the concatenation of all its arguments,
     per \verb|cat|. Finally, given the wrong number of additional arguments for
@@ -1221,10 +1246,12 @@ x509_verify(der_cert: string, cert_stack: vector of string,
     Converts \verb|s| into a pattern. If \verb|convert| is true, \verb|s| is
     first passed through the function \verb|convert_for_pattern| to escape
     special characters of patterns.
+\verbose{
     % TODO: Remove prefix if the function name has changed.
   \item \verb|NFS3::mode2string(mode: count): string|\\
     Convert UNIX file permissions given by \verb|mode| to a string
     representation of the form \verb|rw[xsS]rw[xsS]rw[xtT]|. 
+}
 \end{itemize}
 
 \end{multicols*}
