@@ -17,5 +17,5 @@ Screenshots
 
 Below are two screenshots of the cheat sheet.
 
-https://github.com/broids/cheat-sheet/raw/master/figs/shot-main.png
-https://github.com/broids/cheat-sheet/raw/master/figs/shot-bif.png
+![Page 1](https://github.com/broids/cheat-sheet/raw/master/figs/shot-main.png)
+![Page 2](https://github.com/broids/cheat-sheet/raw/master/figs/shot-bif.png)
