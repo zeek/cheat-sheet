@@ -448,16 +448,18 @@ first, default 0\\
     Get the value of the hostname of the machine Bro runs on.
   \item \verb|current_time(): time|\\
     Returns the current wall-clock time.
-  \item \verb|network_time(): time|\\
-    Returns the timestamp of the last packet processed.
-    Returns the timestamp of the most recently read packet, whether read from a
-    live network interface or from a save file. 
 \verbose{
     In general, you should use \verb|network_time| instead of
     \verb|current_time| unless you're using Bro for non-networking uses (such
     as general scripting; not particularly recommended), because otherwise your
     script may behave very differently on live traffic versus played-back
     traffic from a save file.
+}
+  \item \verb|network_time(): time|\\
+    Returns the timestamp of the last packet processed.
+    Returns the timestamp of the most recently read packet, whether read from a
+    live network interface or from a save file.
+\verbose{
   \item \verb|do_profiling()|\\
     Enable detailed collections of statistics about CPU/memory usage,
     connections, TCP states/reassembler, DNS lookups, timers, and script-level
