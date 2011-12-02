@@ -321,7 +321,7 @@ first, default 0\\
     Note that this corresponds to the status of backgrounding the given
     command, not to the exit status of the command itself. A value of 127
     corresponds to a failure to execute \verb|sh|, and -1 to an internal system
-    failure. 
+    failure.
 }
     The command is run in the background, \verb|stdout| redirects to
     \verb|stderr|. Here is a usage example:
@@ -333,7 +333,7 @@ first, default 0\\
 }
   \item \verb|piped_exec(program: string, to_write: string): bool|\\
     Opens the application \verb|program| with \verb|popen| and writes the
-    string \verb|to_write| to \texttt{stdin} of the opened program. 
+    string \verb|to_write| to \texttt{stdin} of the opened program.
   \item \verb|srand(seed: count)|\\
     Set the seed for subsequent \verb|rand| calls.
   \item \verb|rand(max: count): count|\\
@@ -831,7 +831,7 @@ expect_connection(orig: addr, resp: addr, resp_p: port,
     true, i.e., checks whether $\forall x \in \mathtt{v}: x = \mathtt{T}$.
     Missing elements count as false.
   \item \verb|sort(v: any, ...): any|\\
-    Sorts the vector \verb|v| in place and returns the original vector. 
+    Sorts the vector \verb|v| in place and returns the original vector.
     The second argument is a comparison function that takes two arguments: if
     the type of \verb|v| is \verb|vector of T|, then the comparison function is
     \verb|function(a: T, b: T): bool| that returns \verb|a < b| for some
@@ -1018,7 +1018,7 @@ join_string_array(sep: string, a: table[count] of string): string
         circle inscribed within the square, the six-byte sequence is considered
         a ``hit.'' The percentage of hits can be used to calculate the value of
         $\pi$. For very large streams the value will approach the correct value
-        of $\pi$ if the sequence is close to random. 
+        of $\pi$ if the sequence is close to random.
       \item \verb|serial_correlation|: This quantity measures the extent to
         which each byte in the file depends upon the previous byte. For random
         sequences this value will be close to zero.
@@ -1090,7 +1090,7 @@ join_string_array(sep: string, a: table[count] of string): string
     Performs a geo-lookup of the IP address \verb|a|. Returns city, region, and
     country. Needs \texttt{libgeoip}.
   \item \verb|lookup_asn(a: addr): count|\\
-    Performs a AS number lookup of the IP address \verb|a|. 
+    Performs a AS number lookup of the IP address \verb|a|.
     Needs \texttt{libgeoip}.
   \item
 \begin{verbatim}
@@ -1099,7 +1099,7 @@ x509_verify(der_cert: string, cert_stack: vector of string,
 \end{verbatim}
     Verifies the X.509 certificate in DER format given by \verb|der_cert|. The
     argument \verb|cert_stack| specifies a certificate chain to validate
-    against, with index 0 typically being the root CA. Bro uses the Mozilla 
+    against, with index 0 typically being the root CA. Bro uses the Mozilla
     root CA list by default; \verb|root_certs| extends that list with
     additional root certificates.
   \item \verb|x509_err2str(err_num: count): string|\\
@@ -1119,7 +1119,7 @@ x509_verify(der_cert: string, cert_stack: vector of string,
     If any of the variable arguments is an empty string it is replaced by
     \texttt{default} instead.
   \item \verb|fmt(...): string|\\
-    Produces a formatted string à la \verb|printf|. 
+    Produces a formatted string à la \verb|printf|.
 \verbose{
     The first argument is the \emph{format string} and specifies how subsequent
     arguments are converted for output. It is composed of zero or more
@@ -1251,7 +1251,7 @@ x509_verify(der_cert: string, cert_stack: vector of string,
     % TODO: Remove prefix if the function name has changed.
   \item \verb|NFS3::mode2string(mode: count): string|\\
     Convert UNIX file permissions given by \verb|mode| to a string
-    representation of the form \verb|rw[xsS]rw[xsS]rw[xtT]|. 
+    representation of the form \verb|rw[xsS]rw[xsS]rw[xtT]|.
 }
 \end{itemize}
 
