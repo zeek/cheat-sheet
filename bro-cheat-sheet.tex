@@ -1063,8 +1063,8 @@ join_string_array(sep: string, a: table[count] of string): string
     Checks whether the connection identified by \texttt{id} is (still) active.
   \item \verb|lookup_connection(id: conn_id): connection|\\
     Returns the \texttt{connection} record for \texttt{id}. If
-    \texttt{id} does not point to an existing connection, the function returns
-    a run-time error and returns a dummy value.
+    \texttt{id} does not point to an existing connection, the function
+    generates a run-time error and returns a dummy value.
 \verbose{
   \item \verb|get_conn_transport_proto(id: conn_id): transport_proto|\\
     Returns the transport protocol of the connection identified by \texttt{id}.
