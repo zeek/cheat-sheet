@@ -795,8 +795,9 @@ expect_connection(orig: addr, resp: addr, resp_p: port,
     Flushes all open files to disk.
     Returns true when the operations(s) succeeded.
   \item \verb|mkdir(f: string): bool|\\
-    Creates a new directory identified by \texttt{f}. Returns true if the
-    operation succeeds and \texttt{f} does not exist already.
+    Creates a new directory identified by \verb|f|. Returns true if the
+    operation succeeds and false if direction creation files or \verb|f| exists
+    already.
   \item \verb|enable_raw_output(f: file)|\\
     Function equivalent to the \verb|&raw_output| attribute, which prevents
     escaping of non-ASCII characters when writing to \verb|f|.
@@ -1047,7 +1048,7 @@ join_string_array(sep: string, a: table[count] of string): string
     and \verb|mask_addr(1.2.255.4, 18)| returns \verb|1.2.192.0|.
   \item \verb|remask_addr(a1: addr, a2: addr, top_bits_from_a1: count): count|\\
     Takes some top bits (e.g., subnet address) from \texttt{a1} and the other
-    bits (intra-subnet part) from \texttt{a2} and merge them to get a new
+    bits (intra-subnet part) from \texttt{a2} and merges them to get a new
     address. This is useful for anonymizing at subnet level while preserving
     serial scans.
   \item \verb|is_tcp_port(p: port): bool|\\
