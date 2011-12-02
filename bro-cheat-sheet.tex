@@ -1066,8 +1066,6 @@ join_string_array(sep: string, a: table[count] of string): string
 \verbose{
   \item \verb|get_conn_transport_proto(id: conn_id): transport_proto|\\
     Returns the transport protocol of the connection identified by \texttt{id}.
-    As with \verb|connection_record|, \texttt{id} must point to an active
-    connection.
   \item \verb|get_port_transport_proto(p: port): transport_proto|\\
     Returns the transport protocol of \texttt{p}.
   \item \verb|get_orig_seq(id: conn_id): count|\\
