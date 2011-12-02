@@ -796,7 +796,7 @@ expect_connection(orig: addr, resp: addr, resp_p: port,
     Returns true when the operations(s) succeeded.
   \item \verb|mkdir(f: string): bool|\\
     Creates a new directory identified by \verb|f|. Returns true if the
-    operation succeeds and false if direction creation files or \verb|f| exists
+    operation succeeds and false if the creation fails or if \verb|f| exists
     already.
   \item \verb|enable_raw_output(f: file)|\\
     Function equivalent to the \verb|&raw_output| attribute, which prevents
