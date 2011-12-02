@@ -310,12 +310,12 @@ first, default 0\\
     empty string if it is not defined.
   \item \verb|setenv(var: string, val: string): bool|\\
     Sets the system environment variable \verb|var| to \verb|val|.
+    \ReturnsTrueOnSuccess
 }
   \item \verb|syslog(s: string)|\\
     Send the string \verb|s| to syslog.
   \item \verb|system(s: string): int|\\
     Invokes a command via the \texttt{system} function.
-    Returns true if the return value of \texttt{system} was non-zero.
     Returns the return value from the \texttt{system()} call.
 \verbose{
     Note that this corresponds to the status of backgrounding the given
