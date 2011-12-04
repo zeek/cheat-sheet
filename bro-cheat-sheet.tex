@@ -335,21 +335,23 @@ first, default 0\\
     Opens the application \verb|program| with \verb|popen| and writes the
     string \verb|to_write| to \texttt{stdin} of the opened program.
   \item \verb|srand(seed: count)|\\
-    Set the seed for subsequent \verb|rand| calls.
+    Sets the seed for subsequent \verb|rand| calls.
   \item \verb|rand(max: count): count|\\
     Returns a random value from the interval $[0, \mathtt{max})$.
   \item \verb|md5_hash(...): string|\\
     Computes the MD5 hash value of the provided list of arguments.
   \item \verb|md5_hash_init(index: any): bool|\\
     Initializes MD5 state for \verb|index| to allow for computing hash values
-    incrementally via the function \verb|md5_hash_update|. For example, when
-    computing incremental MD5 values of transferred files in multiple
-    concurrent HTTP connections, it is necessary to call
+    incrementally via the function \verb|md5_hash_update|.
+\verbose{
+    For example, when computing incremental MD5 values of transferred files in
+    multiple concurrent HTTP connections, it is necessary to call
     \verb|md5_hash_init(c$id)| once before invoking
     \verb|md5_hash_update(c$id, some_more_data)| in the \verb|http_entity_data|
     event handler.
+}
   \item \verb|md5_hash_update(index: any, data: string): bool|\\
-    Update the MD5 value associated with \verb|index|. Note that it is
+    Updates the MD5 value associated with \verb|index|. Note that it is
     necessary to call \verb|md5_hash_init(index)| once before calling this
     function to initialize the MD5 state.
   \item \verb|md5_hash_finish(index: any): string|\\
@@ -1219,7 +1221,7 @@ x509_verify(der_cert: string, cert_stack: vector of string,
     PORT command, e.g., \verb|10.0.0.1| and \verb|1055/tcp| to
     \verb|"10,0,0,1,4,31"|.
   \item \verb|decode_netbios_name(name: string): string|\\
-    Decode a \href{http://support.microsoft.com/kb/194203}{NetBIOS name}, e.g.,
+    Decodes a \href{http://support.microsoft.com/kb/194203}{NetBIOS name}, e.g.,
     \verb|"FEEIEFCAEOEFFEECEJEPFDCAEOEBENEF"| to \verb|"THE NETBIOS NAME"|.
   \item \verb|decode_netbios_name_type(name: string): count|\\
     Converts the \href{http://support.microsoft.com/kb/163409}{NetBIOS name
