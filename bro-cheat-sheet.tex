@@ -463,7 +463,7 @@ first, default 0\\
     live network interface or from a save file.
 \verbose{
   \item \verb|do_profiling()|\\
-    Enable detailed collections of statistics about CPU/memory usage,
+    Enables detailed collections of statistics about CPU/memory usage,
     connections, TCP states/reassembler, DNS lookups, timers, and script-level
     state. The script variable \verb|profiling_file| holds the name of the log
     file.
@@ -584,16 +584,16 @@ connect(ip: addr, p: port, our_class: string, retry: interval,
     Establishes a connection to a remote Bro instance or Broccoli application
     at IP address \verb|ip| and port \verb|p|. If the connection fails, Bro
     tries to reconnect with the peer after the time interval \verb|retry|. If
-    \verb|ssl| is true, the connection uses uses SSL to encrypt the session.
+    \verb|ssl| is true, the connection uses SSL to encrypt the session.
     If \verb|our_class| is a non-empty string, the remote (listening) peer
     checks it against its class name in its peer table and terminates the
     connection if they don't match.
-    Returns the locally unique ID of the new peer.
+    Returns a locally unique ID of the new peer.
   \item \verb|disconnect(p: event_peer): bool|\\
     Disconnects the peer identified by \verb|p|.
   \item \verb|listen(ip: addr, p: port, ssl: bool): bool|\\
     Listens on address \verb|ip| and port \verb|p| for remote connections. If
-    \verb|ssl| is true, the Bro uses SSL to encrypt the session.
+    \verb|ssl| is true, Bro uses SSL to encrypt the session.
     \ReturnsTrueOnSuccess
   \item \verb|request_remote_events(p: event_peer, handlers: pattern): bool|\\
     Subscribes to all events from remote peer \verb|p| whose names match the
@@ -608,21 +608,21 @@ connect(ip: addr, p: port, our_class: string, retry: interval,
     Requests logs from remote peer \verb|p|.
     \ReturnsTrueOnSuccess
   \item \verb|set_accept_state(p: event_peer, accept: bool): bool|\\
-    Sets a boolean flag whether Bro accept state from the remote peer \verb|p|.
+    Sets a boolean flag whether Bro accepts state from the remote peer \verb|p|.
     \ReturnsTrueOnSuccess
   \item \verb|set_compression_level(p: event_peer, level: count): bool|\\
-    Sets the compression level of the session with remote peer \verb|p|.
+    Sets the compression level of the session with the remote peer \verb|p|.
     values for \verb|level| are in $[0,9]$, where 0 is the default and means no
-    compression)
+    compression.
     \ReturnsTrueOnSuccess
   \item \verb|is_remote_event(): bool|\\
-    Returns true if the last raised event stemmed from a remote peer.
+    Returns true if the last raised event came from a remote peer.
   \item \verb|send_state(p: event_peer): bool|\\
     Sends all persistent state to the remote peer \verb|p|.
     \ReturnsTrueOnSuccess
   \item \verb|send_id(p: event_peer, id: string): bool|\\
-    Send the value of the global identifier \verb|id| to the remote peer
-    \verb|p|, which might then install it locally.
+    Sends the global identifier \verb|id| to the remote peer \verb|p|, which
+    might then install it locally.
   \item \verb|terminate_communication(): bool|\\
     Gracefully finishes communication by first making sure that all remaining
     data from parent and child has been sent out.
@@ -640,7 +640,7 @@ connect(ip: addr, p: port, our_class: string, retry: interval,
     Sends the currently processed packet to the remote peer \verb|p|.
     \ReturnsTrueOnSuccess
   \item \verb|get_event_peer(): event_peer|\\
-    Returns the peer who generated that last raised event.
+    Returns the peer who generated the last event.
   \item \verb|get_local_event_peer(): event_peer|\\
     Returns the local peer.
   \item \verb|send_capture_filter(p: event_peer, s: string): bool|\\
@@ -760,8 +760,8 @@ expect_connection(orig: addr, resp: addr, resp_p: port,
     \ReturnsTrueOnSuccess
 \verbose{
   \item \verb|get_current_packet(): pcap_packet|\\
-    Returns the currently processed PCAP packet, which is a record containing a
-    timestamp, the ``snaplen,'' and the packet data.
+    Returns the currently processed PCAP packet, which is a record containing
+    the timestamp, ``snaplen,'' and packet data.
   \item \verb|dump_packet(pkt: pcap_packet, file_name: string): bool|\\
     Writes the packet \verb|pkt| to the file identified by \verb|file_name|.
     \ReturnsTrueOnSuccess
@@ -826,18 +826,18 @@ expect_connection(orig: addr, resp: addr, resp_p: port,
     Returns the old size of \verb|v| and 0 if \verb|v| is not a \verb|vector|
     type.
   \item \verb|any_set(v: any): bool|\\
-    Test whether the boolean vector (\verb|vector of bool|) has any true
+    Tests whether the boolean vector (\verb|vector of bool|) has any true
     element, i.e., checks whether $\exists x \in \mathtt{v}: x = \mathtt{T}$.
   \item \verb|all_set(v: any): bool|\\
-    Test whether all elements of the boolean vector (\verb|vector of bool|) are
+    Tests whether all elements of the boolean vector (\verb|vector of bool|) are
     true, i.e., checks whether $\forall x \in \mathtt{v}: x = \mathtt{T}$.
     Missing elements count as false.
   \item \verb|sort(v: any, ...): any|\\
     Sorts the vector \verb|v| in place and returns the original vector.
     The second argument is a comparison function that takes two arguments: if
-    the type of \verb|v| is \verb|vector of T|, then the comparison function is
-    \verb|function(a: T, b: T): bool| that returns \verb|a < b| for some
-    type-specific notion of the less-than operator.
+    the type of \verb|v| is \verb|vector of T|, then the comparison function
+    must be \verb|function(a: T, b: T): bool|, which returns \verb|a < b| for
+    some type-specific notion of the less-than operator.
   \item \verb|order(v: any, ...): vector of count|\\
     Returns the order of the elements in the vector \verb|v| according to some
     comparison function. See \verb|sort|.
