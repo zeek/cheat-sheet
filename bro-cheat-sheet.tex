@@ -361,8 +361,6 @@ first, default 0\\
     Computes an HMAC-MD5 hash value of the provided list of arguments. The HMAC
     secret key is generated from available entropy when Bro starts up, or it
     can be specified for repeatability using the \texttt{-K} flag.
-  \item \verb|file_size(f: string): double|\\
-    Returns the file size in bytes of the file identified by \verb|f|.
   \item \verb|strftime(fmt: string, d: time): string|\\
     Formats the time value \verb|d| according to the format string \verb|fmt|.
     See \verb|man strftime| for the format of \verb|fmt|.
@@ -447,7 +445,7 @@ first, default 0\\
   \item \verb|getpid(): count|\\
     Returns Bro's process ID.
   \item \verb|gethostname(): string|\\
-    Get the value of the hostname of the machine Bro runs on.
+    Returns the hostname of the machine Bro runs on.
   \item \verb|current_time(): time|\\
     Returns the current wall-clock time.
 \verbose{
@@ -501,7 +499,7 @@ first, default 0\\
     exported, a constant, an enum constant, redefinable, and its value (if it
     has one).
   \item \verb|lookup_ID(id: string): any|\\
-    Returns the value of associated with the global identifier \verb|id|. If
+    Returns the value associated with the global identifier \verb|id|. If
     \verb|id| does not describe a valid identifier, the function returns the
     string \verb|"<unknown id>"| or \verb|"<no ID value>"|.
   \item \verb|record_fields(r: any): table[string] of record_field|\\
@@ -529,25 +527,25 @@ first, default 0\\
     one step lower than sending events. This function returns true if the
     \verb|c| stems from one of these other \emph{packet sources}.
   \item \verb|disable_print_hook(f: file)|\\
-    Function equivalent to the \verb|&disable_print_hook| attribute. In a
+    Function equivalent of the \verb|&disable_print_hook| attribute. In a
     distributed setup, communicating Bro instances generate the event
     \verb|print_hook| for each print statement and send it to the remote side.
     When disabled for a particular file, these events will not be propagated to
-    the peer.
+    other peers.
   \item \verb|enable_communication()|\\
     Enables the communication system. By default, communication is off until
     explicitly enabled and all other calls to communication-related BiF's will
     be ignored until done so.
   \item \verb|suspend_processing()|\\
-    Stop Bro's packet processing. Used to synchronize distributed trace
+    Stops Bro's packet processing. Used to synchronize distributed trace
     processing with communication (\emph{pseudo-realtime} mode).
   \item \verb|continue_processing()|\\
-    Resume Bro's packet processing; the counterpart to
+    Resumes Bro's packet processing; the counterpart to
     \verb|suspend_processing|.
   \item \verb|suspend_state_updates()|\\
-    Stop propagating \verb|&synchronized| accesses.
+    Stops propagating \verb|&synchronized| accesses.
   \item \verb|resume_state_updates()|\\
-    Resume propagating \verb|&synchronized| accesses; the counterpart to
+    Resumes propagating \verb|&synchronized| accesses; the counterpart to
     \verb|suspend_state_udpates|.
   \item \verb|enable_event_group(group: string)|\\
     Enables all event handlers in the group \verb|group|. This affects all
@@ -788,6 +786,8 @@ expect_connection(orig: addr, resp: addr, resp_p: port,
     Checks whether \texttt{f} is open.
   \item \verb|write_file(f: file, data: string): bool|\\
     Writes \texttt{data} to \texttt{f}. Returns true on success.
+  \item \verb|file_size(f: string): double|\\
+    Returns the file size in bytes of the file identified by \verb|f|.
   \item \verb|get_file_name(f: file): string|\\
     Returns the filename associated with \texttt{f}.
   \item \verb|set_buf(f: file, buffered: bool)|\\
@@ -1101,10 +1101,10 @@ join_string_array(sep: string, a: table[count] of string): string
 %  \item \verb|preserve_subnet(sn: subnet)|\\
 %  \item \verb|anonymize_addr(a: addr, cl: IPAddrAnonymizationClass): addr|\\
   \item \verb|lookup_location(a: addr) : geo_location|\\
-    Performs a geo-lookup of the IP address \verb|a|. Returns city, region, and
-    country. Needs \texttt{libgeoip}.
+    Performs a geo-lookup of the IP address \verb|a|. Returns country, region,
+    city, latitude, and longitude. Needs Bro to built with \texttt{libgeoip}.
   \item \verb|lookup_asn(a: addr): count|\\
-    Performs a AS number lookup of the IP address \verb|a|.
+    Performs an AS lookup of the IP address \verb|a|.
     Needs \texttt{libgeoip}.
   \item
 \begin{verbatim}
