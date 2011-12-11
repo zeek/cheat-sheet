@@ -1019,15 +1019,15 @@ join_string_array(sep: string, a: table[count] of string): string
         number and a percentage which indicates how frequently a truly random
         sequence would exceed the value calculated, i.e., the degree to which
         the sequence tested is suspected of being non-random.
-      \item \verb|mean|: The arithmetic mean of all the bytes. If the data are
-        close to random, it should be around 127.5.
         If the percentage is greater than 99\% or less than 1\%, the sequence
         is almost certainly not random. If the percentage is between 99\% and
         95\% or between 1\% and 5\%, the sequence is suspect. Percentages
         between 90\% and 95\% and 5\% and 10\% indicate the sequence is
-        ``almost suspect''.
+        ``almost suspect.''
+      \item \verb|mean|: The arithmetic mean of all the bytes. If the data are
+        close to random, it should be around 127.5.
       \item \verb|monte_carlo_pi|: Each successive sequence of six bytes is
-        used as 24-bit $x$ and $y$ co-ordinates within a square. If the
+        used as 24-bit $x$ and $y$ coordinates within a square. If the
         distance of the randomly-generated point is less than the radius of a
         circle inscribed within the square, the six-byte sequence is considered
         a ``hit.'' The percentage of hits can be used to calculate the value of
@@ -1045,7 +1045,7 @@ join_string_array(sep: string, a: table[count] of string): string
     \ReturnsTrueOnSuccess
     See \verb|entropy_test_add| and \verb|entropy_test_finish|.
   \item \verb|entropy_test_add(index: any, data: string): bool|\\
-    Add \verb|data| to the incremental entropy calculation identified by
+    Adds \verb|data| to the incremental entropy calculation identified by
     \verb|index|.
     \ReturnsTrueOnSuccess
   \item \verb|entropy_test_finish(index: any): entropy_test_result|\\
