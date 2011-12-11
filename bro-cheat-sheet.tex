@@ -805,6 +805,18 @@ expect_connection(orig: addr, resp: addr, resp_p: port,
   \item \verb|enable_raw_output(f: file)|\\
     Function equivalent to the \verb|&raw_output| attribute, which prevents
     escaping of non-ASCII characters when writing to \verb|f|.
+\verbose{
+  \item \verb|rotate_file(f: file)|\\
+    Rotates the file \verb|f|. Returns rotation statistics which include the
+    original file name, the name after the rotation, and the time when \verb|f|
+    was opened/closed.
+  \item \verb|rotate_file_by_name(f: string)|\\
+    Same as \verb|rotate_file|, but uses the filename rather than the handle to
+    identify the file.
+  \item \verb|calc_next_rotate(i: interval): interval|\\
+    Calculates the duration until the next time a file is to be rotated based
+    on the given rotate interval \verb|i|.
+}
 \end{itemize}
 
 \subsubsection*{Generic Programming}
