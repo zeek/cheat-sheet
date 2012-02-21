@@ -387,13 +387,8 @@ first, default 0\\
     Gracefully shuts down Bro by terminating outstanding processing. Returns
     true after successful termination and false when Bro is still in the
     process of shutting down.
-  \item \verb|exit()|
-    % TODO: Update this function signature to
-    %
-    %   exit(code: int)
-    %
-    % when the branch topic/bif_cleanup is merged into master.
-    Shuts down the Bro process immediately.
+  \item \verb|exit(code: int)|
+    Shuts down the Bro process immediately and returns with \verb|code|.
 \end{itemize}
 
 % Users typically do not interact with the packet filtering directly.
@@ -1262,8 +1257,7 @@ x509_verify(der_cert: string, cert_stack: vector of string,
     first passed through the function \verb|convert_for_pattern| to escape
     special characters of patterns.
 \verbose{
-    % TODO: Remove prefix if the function name has changed.
-  \item \verb|NFS3::mode2string(mode: count): string|\\
+  \item \verb|mode2string(mode: count): string|\\
     Converts UNIX file permissions given by \verb|mode| to a string
     representation of the form \verb|rw[xsS]rw[xsS]rw[xtT]|.
 }
