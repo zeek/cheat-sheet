@@ -340,22 +340,15 @@ first, default 0\\
     Returns a random value from the interval $[0, \mathtt{max})$.
   \item \verb|md5_hash(...): string|\\
     Computes the MD5 hash value of the provided list of arguments.
-  \item \verb|md5_hash_init(index: any): bool|\\
-    Initializes MD5 state for \verb|index| to allow for computing hash values
-    incrementally via the function \verb|md5_hash_update|.
-\verbose{
-    For example, when computing incremental MD5 values of transferred files in
-    multiple concurrent HTTP connections, it is necessary to call
-    \verb|md5_hash_init(c$id)| once before invoking
-    \verb|md5_hash_update(c$id, some_more_data)| in the \verb|http_entity_data|
-    event handler.
-}
-  \item \verb|md5_hash_update(index: any, data: string): bool|\\
-    Updates the MD5 value associated with \verb|index|. Note that it is
-    necessary to call \verb|md5_hash_init(index)| once before calling this
-    function to initialize the MD5 state.
-  \item \verb|md5_hash_finish(index: any): string|\\
-    Returns the final MD5 digest associated with \verb|index|.
+  \item \verb|md5_hash_init(): opaque of md5|\\
+    Retrieves an opaque handle for incremental MD5 hash computation. Add data
+    with via \verb|md5_hash_update|.
+  \item \verb|md5_hash_update(handle: opaque of md5, data: string): bool|\\
+    Feeds a given MD5 computation with \verb|data|. Call
+    \verb|md5_hash_finish(handle)| to retrieve the final hash digest.
+  \item \verb|md5_hash_finish(handle: opaque of md5): string|\\
+    Returns the final MD5 digest of \verb|handle|. This invalidates
+    \verb|handle|, i.e., the function can only be called once.
   \item \verb|md5_hmac(...): string|\\
     Computes an HMAC-MD5 hash value of the provided list of arguments. The HMAC
     secret key is generated from available entropy when Bro starts up, or it
@@ -363,17 +356,31 @@ first, default 0\\
   \item \verb|sha1_hash(...): string|\\
     Computes the SHA1 hash value of the provided list of arguments.
     Analogous to \verb|md5_hash|.
-  \item \verb|sha1_hash_init(...): bool|\\
-    Initializes SHA1 state to enable incremental hash computation. Afterwards,
-    you can feed data to \verb|sha1_hash_update| and finally need to call
-    \verb|sha1_hash_finish| to finish the computation and get the final result.
-    Analogous to \verb|md5_hash_init|.
-  \item \verb|sha1_hash_update(index: any, data: string): bool|\\
-    Updates the SHA1 value associated with \verb|index|.
-    Analogous to \verb|md5_hash_update|.
-  \item \verb|sha1_hash_finish(index: any): string|\\
-    Returns the final SHA1 digest associated with the \verb|index|.
-    Analogous to \verb|md5_hash_finish|.
+  \item \verb|sha1_hash(...): string|\\
+    Computes the SHA1 hash value of the provided list of arguments.
+  \item \verb|sha1_hash_init(): opaque of sha1|\\
+    Retrieves an opaque handle for incremental SHA1 hash computation. Add data
+    with via \verb|sha1_hash_update|.
+  \item \verb|sha1_hash_update(handle: opaque of sha1, data: string): bool|\\
+    Feeds a given SHA1 computation with \verb|data|. Call
+    \verb|sha1_hash_finish(handle)| to retrieve the final hash digest.
+  \item \verb|sha1_hash_finish(handle: opaque of sha1): string|\\
+    Returns the final SHA1 digest of \verb|handle|. This invalidates
+    \verb|handle|, i.e., the function can only be called once.
+  \item \verb|sha256_hash(...): string|\\
+    Computes the SHA256 hash value of the provided list of arguments.
+    Analogous to \verb|md5_hash|.
+  \item \verb|sha256_hash(...): string|\\
+    Computes the SHA256 hash value of the provided list of arguments.
+  \item \verb|sha256_hash_init(): opaque of sha256|\\
+    Retrieves an opaque handle for incremental SHA256 hash computation. Add data
+    with via \verb|sha256_hash_update|.
+  \item \verb|sha256_hash_update(handle: opaque of sha256, data: string): bool|\\
+    Feeds a given SHA256 computation with \verb|data|. Call
+    \verb|sha256_hash_finish(handle)| to retrieve the final hash digest.
+  \item \verb|sha256_hash_finish(handle: opaque of sha256): string|\\
+    Returns the final SHA256 digest of \verb|handle|. This invalidates
+    \verb|handle|, i.e., the function can only be called once.
   \item \verb|strftime(fmt: string, d: time): string|\\
     Formats the time value \verb|d| according to the format string \verb|fmt|.
     See \verb|man strftime| for the format of \verb|fmt|.
@@ -1037,20 +1044,20 @@ join_string_array(sep: string, a: table[count] of string): string
         sequences this value will be close to zero.
     \end{itemize}
 }
-  \item \verb|entropy_test_init(index: any): bool|\\
-    Initializes data structures for incremental entropy calculation. The
-    \verb|index| argument is an arbitrary unique value per distinct
-    computation.
+  \item \verb|entropy_test_init(): opaque of entropy|\\
+    Retrieves a data structures for incremental entropy calculation.
     \ReturnsTrueOnSuccess
     See \verb|entropy_test_add| and \verb|entropy_test_finish|.
-  \item \verb|entropy_test_add(index: any, data: string): bool|\\
+  \item \verb|entropy_test_add(handle: opaque of entropy, data: string): bool|\\
     Adds \verb|data| to the incremental entropy calculation identified by
-    \verb|index|.
+    \verb|handle|.
     \ReturnsTrueOnSuccess
-  \item \verb|entropy_test_finish(index: any): entropy_test_result|\\
-    Finalizes the incremental entropy calculation identified by \verb|index|.
+  \item \verb|entropy_test_finish(handle: opaque of entropy): entropy_test_result|\\
+    Finalizes the incremental entropy calculation identified by \verb|handle|.
+\verbose{
     When all data has been added, this function returns the result record which
     is described above in \verb|find_entropy|.
+}
 \end{itemize}
 
 \subsubsection*{Network Type Processing}
