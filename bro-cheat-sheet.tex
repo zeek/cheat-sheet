@@ -344,7 +344,7 @@ first, default 0\\
     Retrieves an opaque handle for incremental MD5 hash computation. Add data
     with via \verb|md5_hash_update|.
   \item \verb|md5_hash_update(handle: opaque of md5, data: string): bool|\\
-    Feeds a given MD5 computation with \verb|data|. Call
+    Feeds an incremental MD5 computation with \verb|data|. Call
     \verb|md5_hash_finish(handle)| to retrieve the final hash digest.
   \item \verb|md5_hash_finish(handle: opaque of md5): string|\\
     Returns the final MD5 digest of \verb|handle|. This invalidates
@@ -362,7 +362,7 @@ first, default 0\\
     Retrieves an opaque handle for incremental SHA1 hash computation. Add data
     with via \verb|sha1_hash_update|.
   \item \verb|sha1_hash_update(handle: opaque of sha1, data: string): bool|\\
-    Feeds a given SHA1 computation with \verb|data|. Call
+    Feeds an incremental SHA1 computation with \verb|data|. Call
     \verb|sha1_hash_finish(handle)| to retrieve the final hash digest.
   \item \verb|sha1_hash_finish(handle: opaque of sha1): string|\\
     Returns the final SHA1 digest of \verb|handle|. This invalidates
@@ -376,7 +376,7 @@ first, default 0\\
     Retrieves an opaque handle for incremental SHA256 hash computation. Add data
     with via \verb|sha256_hash_update|.
   \item \verb|sha256_hash_update(handle: opaque of sha256, data: string): bool|\\
-    Feeds a given SHA256 computation with \verb|data|. Call
+    Feeds an incremental SHA256 computation with \verb|data|. Call
     \verb|sha256_hash_finish(handle)| to retrieve the final hash digest.
   \item \verb|sha256_hash_finish(handle: opaque of sha256): string|\\
     Returns the final SHA256 digest of \verb|handle|. This invalidates
@@ -403,7 +403,7 @@ first, default 0\\
   \item \verb|unique_id_from(pool: int, prefix: string): string|\\
     Same as \verb|unique_id|, except that the additional argument \verb|pool|
     specifies a seed for determinism.
-  \item \verb|terminate(): bool|
+  \item \verb|terminate(): bool|\\
     Gracefully shuts down Bro by terminating outstanding processing. Returns
     true after successful termination and false when Bro is still in the
     process of shutting down.
