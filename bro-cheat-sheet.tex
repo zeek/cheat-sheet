@@ -1119,6 +1119,7 @@ join_string_array(sep: string, a: table[count] of string): string
     Performs an AS lookup of the IP address \verb|a|.
     Needs \texttt{libgeoip}.
   \item
+\verbose{
 \begin{verbatim}
 x509_verify(der_cert: string, cert_stack: vector of string,
             root_certs: table[string] of string): count
@@ -1131,6 +1132,7 @@ x509_verify(der_cert: string, cert_stack: vector of string,
   \item \verb|x509_err2str(err_num: count): string|\\
     Converts the X.509 certificate verification error code \verb|err_num| into
     a string representation.
+}
 \end{itemize}
 
 \subsubsection*{Conversion}
