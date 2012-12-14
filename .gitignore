@@ -1,6 +1,7 @@
 *.aux
 *.cpt
 *.fdb_latexmk
+*.fls
 *.log
 *.out
 *.sw[op]
